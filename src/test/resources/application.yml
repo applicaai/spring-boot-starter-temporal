@@ -1,0 +1,16 @@
+spring.temporal:
+  host: localhost
+  port: 7933
+  domain: sample
+  alwaysSave: false
+  workflows:
+    one:
+      tasklist: one
+      executiontimeout: 1000
+      activityPoolSize: 100
+      workflowPoolSize: 50
+    two:
+      tasklist: two
+      executiontimeout: 10000
+      activityPoolSize: 100
+      workflowPoolSize: 50

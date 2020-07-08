@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ai.applica.spring.boot.starter.temporal.config.TemporalBootstrapConfiguration,\
+ai.applica.spring.boot.starter.temporal.RegisterDomain
