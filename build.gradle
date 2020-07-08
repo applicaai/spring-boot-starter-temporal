@@ -46,3 +46,6 @@ publishing {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+test {
+  testLogging.showStandardStreams true
+}

@@ -1,26 +1,20 @@
 package ai.applica.spring.boot.starter.temporal.processors;
 
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
-import ai.applica.spring.boot.starter.temporal.annotations.Workflow;
-import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
-import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
-import io.temporal.worker.Worker;
-import io.temporal.worker.WorkerFactory;
-import io.temporal.worker.WorkerOptions;
-import io.temporal.workflow.WorkflowMethod;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
@@ -30,6 +24,21 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
+import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
+import io.temporal.activity.ActivityOptions;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerOptions;
+import io.temporal.workflow.Workflow;
+import io.temporal.workflow.WorkflowMethod;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -37,7 +46,7 @@ public class WorkflowAnnotationBeanPostProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
 
   private final WorkflowClient workflowClient;
-  private final TemporalProperties  temporalProperties;
+  private final TemporalProperties temporalProperties;
   private final WorkerFactory workerFactory;
   private final Set<String> classes = new HashSet<>();
 
@@ -48,6 +57,7 @@ public class WorkflowAnnotationBeanPostProcessor
     return bean;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object postProcessAfterInitialization(final Object bean, final String beanName) throws BeansException {
     if (classes.contains(bean.getClass().getName())) {
@@ -55,15 +65,14 @@ public class WorkflowAnnotationBeanPostProcessor
     }
 
     Class<?> targetClass = AopUtils.getTargetClass(bean);
-    Workflow workflow = AnnotationUtils.findAnnotation(targetClass, Workflow.class);
+    TemporalWorkflow workflow = AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
 
     if (workflow == null) {
       return bean;
     }
 
     Set<Method> methods = MethodIntrospector.selectMethods(targetClass,
-        (ReflectionUtils.MethodFilter) method ->
-            AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
+        (ReflectionUtils.MethodFilter) method -> AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
 
     if (methods.isEmpty()) {
 
@@ -74,23 +83,18 @@ public class WorkflowAnnotationBeanPostProcessor
 
       log.info("Registering worker for {}", targetClass);
 
-      // Регистрируем воркера с проксей от бина имплементации
-
       WorkflowOption option = temporalProperties.getWorkflows().get(workflow.value());
 
-      Worker worker = workerFactory
-          .newWorker(option.getTaskList(), getWorkerOptions(option));
+      Worker worker = workerFactory.newWorker(option.getTaskList(), getWorkerOptions(option));
 
+      // Here we register client to call the process
       Enhancer enhancer = new Enhancer();
       enhancer.setSuperclass(bean.getClass());
       enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
 
         if (methods.contains(method)) {
-          WorkflowOptions options = WorkflowOptions.newBuilder()
-              .setTaskQueue(workflow.value())
-              .setWorkflowExecutionTimeout(
-                  Duration.ofSeconds(option.getExecutionTimeout()))
-              .build();
+          WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(workflow.value())
+              .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout())).build();
 
           Object stub = workflowClient.newWorkflowStub(targetClass.getInterfaces()[0], options);
 
@@ -101,11 +105,45 @@ public class WorkflowAnnotationBeanPostProcessor
       });
 
       Object o = enhancer.create();
+      // We add activities instantions to worker
+      List<Object> activities = new ArrayList<Object>();
+      List<Field> activitieFields = new ArrayList<Field>();
+      try {
+        for (Field field : targetClass.getDeclaredFields()) {
 
-      worker.addWorkflowImplementationFactory(
-          (Class<Object>) targetClass.getInterfaces()[0],
-          () -> ((DefaultListableBeanFactory) beanFactory).configureBean(bean, beanName));
-
+          ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
+          if (annotations.length > 0) {
+            DependencyDescriptor desc = new DependencyDescriptor(field, true);
+            Object dep = ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
+            activities.add(dep);
+            activitieFields.add(field);
+          }
+        }
+        if (activities.size() > 0) {
+          worker.registerActivitiesImplementations(activities.toArray());
+        }
+      } catch (IllegalArgumentException | SecurityException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      // we create the worker
+      worker.addWorkflowImplementationFactory((Class<Object>) targetClass.getInterfaces()[0], () -> {
+         // we inject Activiti Stubs in plase of orginal activites
+          activitieFields.forEach(field -> {
+              int durationInSeconds = field.getAnnotation(ActivityStub.class).durationInSeconds();
+              Object as = Workflow.newActivityStub(field.getType(),
+                  ActivityOptions.newBuilder().setScheduleToCloseTimeout(Duration.ofSeconds(durationInSeconds)).build());
+              try {
+                ReflectionUtils.makeAccessible(field);
+		            field.set(bean, as);
+              } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+              }
+            });
+            log.error(beanName);
+            return ((DefaultListableBeanFactory) beanFactory).configureBean(bean, beanName);
+          });
+        
       ((DefaultListableBeanFactory) beanFactory).registerSingleton(beanName, o);
 
       classes.add(bean.getClass().getName());

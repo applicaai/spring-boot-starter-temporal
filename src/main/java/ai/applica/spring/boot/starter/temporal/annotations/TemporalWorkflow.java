@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface Workflow {
+public @interface TemporalWorkflow {
   /**
    * Link to workflow properties to be loaded from config
    */
