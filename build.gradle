@@ -22,11 +22,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure:2.3.1.RELEASE'
     implementation 'io.temporal:temporal-sdk:0.26.0'
     
+	implementation 'org.springframework.boot:spring-boot-starter-test:2.3.1.RELEASE'
     implementation 'org.springframework:spring-aspects:5.2.7.RELEASE'
     compileOnly 'org.projectlombok:lombok:1.18.12'
 	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 	
-	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.3.1.RELEASE'
     testCompileOnly 'org.projectlombok:lombok:1.18.12'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }

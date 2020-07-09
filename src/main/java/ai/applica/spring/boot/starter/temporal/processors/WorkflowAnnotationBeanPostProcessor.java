@@ -28,16 +28,19 @@ import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
-import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
-import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowMethod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Loaded;
+import net.bytebuddy.dynamic.DynamicType.Unloaded;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
 
 @Slf4j
 @Configuration
@@ -93,6 +96,7 @@ public class WorkflowAnnotationBeanPostProcessor
       enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
 
         if (methods.contains(method)) {
+
           WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(workflow.value())
               .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout())).build();
 
@@ -110,7 +114,6 @@ public class WorkflowAnnotationBeanPostProcessor
       List<Field> activitieFields = new ArrayList<Field>();
       try {
         for (Field field : targetClass.getDeclaredFields()) {
-
           ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
           if (annotations.length > 0) {
             DependencyDescriptor desc = new DependencyDescriptor(field, true);
@@ -126,24 +129,19 @@ public class WorkflowAnnotationBeanPostProcessor
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
+
+      // we add method stubs
+      Method method = (Method) methods.toArray()[0];
+      Unloaded<?> beanU = new ByteBuddy().subclass(bean.getClass()).implement(bean.getClass().getInterfaces()[0])
+          .method(ElementMatchers.named(method.getName()))
+          .intercept(MethodDelegation.to(new ActivityStubIntercepter(activitieFields)))
+          .make();
+      Loaded<?> beanL = beanU.load(bean.getClass().getClassLoader());
+
       // we create the worker
-      worker.addWorkflowImplementationFactory((Class<Object>) targetClass.getInterfaces()[0], () -> {
-         // we inject Activiti Stubs in plase of orginal activites
-          activitieFields.forEach(field -> {
-              int durationInSeconds = field.getAnnotation(ActivityStub.class).durationInSeconds();
-              Object as = Workflow.newActivityStub(field.getType(),
-                  ActivityOptions.newBuilder().setScheduleToCloseTimeout(Duration.ofSeconds(durationInSeconds)).build());
-              try {
-                ReflectionUtils.makeAccessible(field);
-		            field.set(bean, as);
-              } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-              }
-            });
-            log.error(beanName);
-            return ((DefaultListableBeanFactory) beanFactory).configureBean(bean, beanName);
-          });
-        
+      worker.registerWorkflowImplementationTypes(beanL.getLoaded());
+      
+      // we register the client
       ((DefaultListableBeanFactory) beanFactory).registerSingleton(beanName, o);
 
       classes.add(bean.getClass().getName());
