@@ -1,3 +1,20 @@
+/*
+ *  Copyright (c) 2020 Applica.ai All Rights Reserved
+ *
+ *  Copyright 2012-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not
+ *  use this file except in compliance with the License. A copy of the License is
+ *  located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ *  or in the "license" file accompanying this file. This file is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ *  express or implied. See the License for the specific language governing
+ *  permissions and limitations under the License.
+ */
+
 package ai.applica.spring.boot.starter.temporal.annotations;
 
 import java.lang.annotation.ElementType;
@@ -5,14 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Indicates that service is an appropriate temporal workflow implementation
- */
+/** Indicates that service is an appropriate temporal workflow implementation */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface TemporalWorkflow {
-  /**
-   * Link to workflow properties to be loaded from config
-   */
+  /** Link to workflow properties to be loaded from config */
   String value();
 }
