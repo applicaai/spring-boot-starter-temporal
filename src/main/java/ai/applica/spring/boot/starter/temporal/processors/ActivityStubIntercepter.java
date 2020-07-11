@@ -31,7 +31,6 @@ import org.springframework.util.ReflectionUtils;
 
 public class ActivityStubIntercepter {
   private List<Field> activitieFields;
-  private boolean activated = false;
 
   public ActivityStubIntercepter(List<Field> activitieFields) {
     this.activitieFields = activitieFields;
@@ -39,25 +38,22 @@ public class ActivityStubIntercepter {
 
   @RuntimeType
   public Object process(@This Object obj, @SuperCall Callable<Object> call) throws Exception {
-    if (!activated) {
-      activitieFields.forEach(
-          field -> {
-            ActivityStub asc = field.getAnnotation(ActivityStub.class);
-            Object was =
-                Workflow.newActivityStub(
-                    field.getType(),
-                    ActivityOptions.newBuilder()
-                        .setScheduleToCloseTimeout(Duration.ofSeconds(asc.durationInSeconds()))
-                        .build());
-            try {
-              ReflectionUtils.makeAccessible(field);
-              field.set(obj, was);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      activated = true;
-    }
+    activitieFields.forEach(
+        field -> {
+          ActivityStub asc = field.getAnnotation(ActivityStub.class);
+          Object was =
+              Workflow.newActivityStub(
+                  field.getType(),
+                  ActivityOptions.newBuilder()
+                      .setScheduleToCloseTimeout(Duration.ofSeconds(asc.durationInSeconds()))
+                      .build());
+          try {
+            ReflectionUtils.makeAccessible(field);
+            field.set(obj, was);
+          } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+          }
+        });
     return call.call();
   }
 }

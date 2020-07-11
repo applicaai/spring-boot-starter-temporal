@@ -17,31 +17,118 @@
 
 package ai.applica.spring.boot.starter.temporal;
 
+import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
+import ai.applica.spring.boot.starter.temporal.processors.ActivityStubIntercepter;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.client.WorkflowOptions.Builder;
+import io.temporal.testing.TestWorkflowEnvironment;
+import io.temporal.worker.Worker;
+import io.temporal.workflow.WorkflowMethod;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Loaded;
+import net.bytebuddy.dynamic.DynamicType.Unloaded;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
+import org.springframework.core.MethodIntrospector;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * E - workflow interface I - workflow implementation Two parameters so to autowire both by
  * interface and implementation
  */
+@Service
 @RequiredArgsConstructor
-public class WorkflowFactory<E, I> {
+public class WorkflowFactory {
 
+  private final TemporalProperties temporalProperties;
   private final WorkflowClient workflowClient;
-  private final WorkflowOption option;
-  private final String key;
-  private final Class<E> clazzInterface;
 
-  public E next() {
-    WorkflowOptions options =
-        WorkflowOptions.newBuilder()
-            .setTaskQueue(key)
-            .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout()))
-            .build();
+  public <T> T makeClient(Class<T> workflowInterface, Class<? extends T> workflowClass) {
 
-    return workflowClient.newWorkflowStub(clazzInterface, options);
+    Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
+    return makeClient(workflowInterface, optionsBuilder);
+  }
+
+  public <T> T makeClient(Class<T> workflowInterface, Builder optionsBuilder) {
+    return makeClient(workflowInterface, optionsBuilder, null);
+  }
+
+  public Builder defaultOptionsBuilder(Class<?> workflowClass) {
+    TemporalWorkflow workflow =
+        AnnotationUtils.findAnnotation(workflowClass, TemporalWorkflow.class);
+
+    WorkflowOption option = temporalProperties.getWorkflows().get(workflow.value());
+    return WorkflowOptions.newBuilder()
+        .setTaskQueue(workflow.value())
+        .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout()));
+  }
+
+  public <T> T makeClient(
+      Class<T> workflowInterface,
+      Class<? extends T> workflowClass,
+      TestWorkflowEnvironment testEnv) {
+    Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
+    return makeClient(workflowInterface, optionsBuilder, testEnv);
+  }
+
+  public <T> T makeClient(
+      Class<T> workflowInterface, Builder optionsBuilder, TestWorkflowEnvironment testEnv) {
+    WorkflowClient lwc = workflowClient;
+    if (testEnv != null) {
+      lwc = testEnv.getWorkflowClient();
+    }
+    T stub = lwc.newWorkflowStub(workflowInterface, optionsBuilder.build());
+    return stub;
+  }
+
+  public Worker makeWorker(Class<?> targetClass, TestWorkflowEnvironment testEnv) {
+    TemporalWorkflow workflowAnotation =
+        AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
+    WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
+
+    Worker worker = testEnv.newWorker(option.getTaskList());
+    worker.registerWorkflowImplementationTypes(makeWorkflowClass(targetClass));
+    return worker;
+  }
+
+  public Class<?> makeWorkflowClass(Class<?> targetClass) {
+    Set<Method> methods =
+        MethodIntrospector.selectMethods(
+            targetClass,
+            (ReflectionUtils.MethodFilter)
+                method -> AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
+
+    Method method = (Method) methods.toArray()[0];
+
+    List<Field> activitieFields = new ArrayList<Field>();
+    for (Field field : targetClass.getDeclaredFields()) {
+      ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
+      if (annotations.length > 0) {
+        activitieFields.add(field);
+      }
+    }
+
+    Unloaded<?> beanU =
+        new ByteBuddy()
+            .subclass(targetClass)
+            .implement(targetClass.getInterfaces()[0])
+            .method(ElementMatchers.named(method.getName()))
+            .intercept(MethodDelegation.to(new ActivityStubIntercepter(activitieFields)))
+            .make();
+    Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
+    return beanL.getLoaded();
   }
 }

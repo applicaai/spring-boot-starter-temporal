@@ -19,20 +19,22 @@
  *  permissions and limitations under the License.
  */
 
-package ai.applica.spring.boot.starter.temporal.samples;
+package ai.applica.spring.boot.starter.temporal.samples.apps;
 
+import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
-import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
-import java.time.Duration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  * Hello World Temporal workflow that executes a single activity. Requires a local instance the
@@ -58,6 +60,8 @@ public class HelloActivity {
   }
 
   /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
+  @Component
+  @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
 
     /**
@@ -65,10 +69,8 @@ public class HelloActivity {
      * invocations. Because activities are reentrant, only a single stub can be used for multiple
      * activity invocations.
      */
-    private final GreetingActivities activities =
-        Workflow.newActivityStub(
-            GreetingActivities.class,
-            ActivityOptions.newBuilder().setScheduleToCloseTimeout(Duration.ofSeconds(2)).build());
+    @ActivityStub(durationInSeconds = 10)
+    private GreetingActivities activities;
 
     @Override
     public String getGreeting(String name) {
@@ -77,10 +79,21 @@ public class HelloActivity {
     }
   }
 
+  @Service
+  static class SimpleExclamationBean {
+    public String getExclamation() {
+      return "!";
+    }
+  }
+
+  @Service
   static class GreetingActivitiesImpl implements GreetingActivities {
+
+    @Autowired private SimpleExclamationBean simpleExclamationBean;
+
     @Override
     public String composeGreeting(String greeting, String name) {
-      return greeting + " " + name + "!";
+      return greeting + " " + name + simpleExclamationBean.getExclamation();
     }
   }
 

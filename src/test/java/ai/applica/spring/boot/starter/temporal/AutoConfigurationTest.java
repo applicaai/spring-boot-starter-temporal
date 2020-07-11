@@ -19,6 +19,7 @@ package ai.applica.spring.boot.starter.temporal;
 
 import static org.junit.Assert.assertNotNull;
 
+import io.temporal.client.WorkflowOptions.Builder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest()
 public class AutoConfigurationTest {
 
-  @Autowired HelloWorkflowImpl impl;
-  @Autowired HelloWorkflowImplTwo impl2;
+  @Autowired WorkflowFactory fact;
 
   @Test
   public void workflowsProcessOk() {
@@ -40,8 +40,12 @@ public class AutoConfigurationTest {
     //   // TODO Auto-generated catch block
     //   e.printStackTrace();
     // }
+    HelloWorkflow impl = fact.makeClient(HelloWorkflow.class, HelloWorkflowImpl.class);
     assertNotNull(impl.process());
 
+    Builder options = fact.defaultOptionsBuilder(HelloWorkflowImplTwo.class);
+    options.setWorkflowId("workflowId-1");
+    HelloWorkflow impl2 = fact.makeClient(HelloWorkflow.class, options);
     assertNotNull(impl2.process());
   }
 }

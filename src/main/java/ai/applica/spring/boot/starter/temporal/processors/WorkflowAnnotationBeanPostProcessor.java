@@ -17,30 +17,23 @@
 
 package ai.applica.spring.boot.starter.temporal.processors;
 
+import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.workflow.WorkflowMethod;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType.Loaded;
-import net.bytebuddy.dynamic.DynamicType.Unloaded;
-import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.matcher.ElementMatchers;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -49,8 +42,6 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.cglib.proxy.Enhancer;
-import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.Ordered;
@@ -63,7 +54,7 @@ import org.springframework.util.ReflectionUtils;
 public class WorkflowAnnotationBeanPostProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
 
-  private final WorkflowClient workflowClient;
+  private final WorkflowFactory workflowClientFactory;
   private final TemporalProperties temporalProperties;
   private final WorkerFactory workerFactory;
   private final Set<String> classes = new HashSet<>();
@@ -109,34 +100,8 @@ public class WorkflowAnnotationBeanPostProcessor
 
       Worker worker = workerFactory.newWorker(option.getTaskList(), getWorkerOptions(option));
 
-      // Here we register client to call the process
-      Enhancer enhancer = new Enhancer();
-      enhancer.setSuperclass(bean.getClass());
-      enhancer.setCallback(
-          (MethodInterceptor)
-              (obj, method, args, proxy) -> {
-                if (methods.contains(method)) {
-
-                  WorkflowOptions options =
-                      WorkflowOptions.newBuilder()
-                          .setTaskQueue(workflow.value())
-                          .setWorkflowExecutionTimeout(
-                              Duration.ofSeconds(option.getExecutionTimeout()))
-                          .build();
-
-                  Object stub =
-                      workflowClient.newWorkflowStub(targetClass.getInterfaces()[0], options);
-
-                  return stub.getClass().getMethod(method.getName()).invoke(stub, args);
-                } else {
-                  return proxy.invokeSuper(obj, args);
-                }
-              });
-
-      Object o = enhancer.create();
       // We add activities instantions to worker
       List<Object> activities = new ArrayList<Object>();
-      List<Field> activitieFields = new ArrayList<Field>();
       try {
         for (Field field : targetClass.getDeclaredFields()) {
           ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
@@ -145,33 +110,18 @@ public class WorkflowAnnotationBeanPostProcessor
             Object dep =
                 ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
             activities.add(dep);
-            activitieFields.add(field);
           }
         }
         if (activities.size() > 0) {
           worker.registerActivitiesImplementations(activities.toArray());
         }
       } catch (IllegalArgumentException | SecurityException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        new RuntimeException(e);
       }
 
-      // we add method stubs
-      Method method = (Method) methods.toArray()[0];
-      Unloaded<?> beanU =
-          new ByteBuddy()
-              .subclass(bean.getClass())
-              .implement(bean.getClass().getInterfaces()[0])
-              .method(ElementMatchers.named(method.getName()))
-              .intercept(MethodDelegation.to(new ActivityStubIntercepter(activitieFields)))
-              .make();
-      Loaded<?> beanL = beanU.load(bean.getClass().getClassLoader());
-
       // we create the worker
-      worker.registerWorkflowImplementationTypes(beanL.getLoaded());
-
-      // we register the client
-      ((DefaultListableBeanFactory) beanFactory).registerSingleton(beanName, o);
+      worker.registerWorkflowImplementationTypes(
+          workflowClientFactory.makeWorkflowClass(targetClass));
 
       classes.add(bean.getClass().getName());
     }

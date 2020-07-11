@@ -21,34 +21,46 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static ai.applica.spring.boot.starter.temporal.samples.HelloActivity.TASK_QUEUE;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
-import ai.applica.spring.boot.starter.temporal.samples.HelloActivity.GreetingActivitiesImpl;
-import ai.applica.spring.boot.starter.temporal.samples.HelloActivity.GreetingWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.HelloActivity.GreetingWorkflowImpl;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
+import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflowImpl;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
+@RunWith(SpringRunner.class)
+// FIXME disable auto worker creation
+// @EnableAutoConfiguration(exclude = {WorkflowAnnotationBeanPostProcessor.class})
+@SpringBootTest()
 public class HelloActivityTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
-  private WorkflowClient client;
+  GreetingWorkflow workflow;
+
+  @Autowired WorkflowFactory fact;
+  @Autowired GreetingActivities greatActivity;
 
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = testEnv.newWorker(TASK_QUEUE);
-    worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
+    worker = fact.makeWorker(GreetingWorkflowImpl.class, testEnv);
 
-    client = testEnv.getWorkflowClient();
+    // Get a workflow stub using the same task queue the worker uses.
+    workflow = fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv);
   }
 
   @After
@@ -58,13 +70,9 @@ public class HelloActivityTest {
 
   @Test
   public void testActivityImpl() {
-    worker.registerActivitiesImplementations(new GreetingActivitiesImpl());
+    worker.registerActivitiesImplementations(greatActivity);
     testEnv.start();
 
-    // Get a workflow stub using the same task queue the worker uses.
-    GreetingWorkflow workflow =
-        client.newWorkflowStub(
-            GreetingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
     // Execute a workflow waiting for it to complete.
     String greeting = workflow.getGreeting("World");
     assertEquals("Hello World!", greeting);
@@ -72,19 +80,14 @@ public class HelloActivityTest {
 
   @Test
   public void testMockedActivity() {
-    // FIXME
-    // GreetingActivities activities = mock(GreetingActivities.class);
-    // when(activities.composeGreeting("Hello", "World")).thenReturn("Hello World!");
-    // worker.registerActivitiesImplementations(activities);
-    // testEnv.start();
+    GreetingActivities activities =
+        mock(GreetingActivities.class, withSettings().withoutAnnotations());
+    when(activities.composeGreeting("Hello", "World")).thenReturn("Hello World!");
+    worker.registerActivitiesImplementations(activities);
+    testEnv.start();
 
-    // // Get a workflow stub using the same task queue the worker uses.
-    // GreetingWorkflow workflow =
-    //     client.newWorkflowStub(
-    //         GreetingWorkflow.class,
-    // WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
-    // // Execute a workflow waiting for it to complete.
-    // String greeting = workflow.getGreeting("World");
-    // assertEquals("Hello World!", greeting);
+    // Execute a workflow waiting for it to complete.
+    String greeting = workflow.getGreeting("World");
+    assertEquals("Hello World!", greeting);
   }
 }

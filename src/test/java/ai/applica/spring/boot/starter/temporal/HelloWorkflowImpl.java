@@ -19,9 +19,9 @@ package ai.applica.spring.boot.starter.temporal;
 
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @TemporalWorkflow("one")
 public class HelloWorkflowImpl implements HelloWorkflow {
 
