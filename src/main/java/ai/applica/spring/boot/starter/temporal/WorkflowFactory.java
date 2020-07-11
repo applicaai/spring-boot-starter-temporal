@@ -42,14 +42,12 @@ import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * E - workflow interface I - workflow implementation Two parameters so to autowire both by
  * interface and implementation
  */
-@Service
 @RequiredArgsConstructor
 public class WorkflowFactory {
 
@@ -72,23 +70,23 @@ public class WorkflowFactory {
 
     WorkflowOption option = temporalProperties.getWorkflows().get(workflow.value());
     return WorkflowOptions.newBuilder()
-        .setTaskQueue(workflow.value())
+        .setTaskQueue(option.getTaskQueue())
         .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout()));
   }
 
   public <T> T makeClient(
       Class<T> workflowInterface,
       Class<? extends T> workflowClass,
-      TestWorkflowEnvironment testEnv) {
+      WorkflowClient testWorkflowClient) {
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
-    return makeClient(workflowInterface, optionsBuilder, testEnv);
+    return makeClient(workflowInterface, optionsBuilder, testWorkflowClient);
   }
 
   public <T> T makeClient(
-      Class<T> workflowInterface, Builder optionsBuilder, TestWorkflowEnvironment testEnv) {
+      Class<T> workflowInterface, Builder optionsBuilder, WorkflowClient testWorkflowClient) {
     WorkflowClient lwc = workflowClient;
-    if (testEnv != null) {
-      lwc = testEnv.getWorkflowClient();
+    if (testWorkflowClient != null) {
+      lwc = testWorkflowClient;
     }
     T stub = lwc.newWorkflowStub(workflowInterface, optionsBuilder.build());
     return stub;
@@ -99,7 +97,7 @@ public class WorkflowFactory {
         AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
     WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
 
-    Worker worker = testEnv.newWorker(option.getTaskList());
+    Worker worker = testEnv.newWorker(option.getTaskQueue());
     worker.registerWorkflowImplementationTypes(makeWorkflowClass(targetClass));
     return worker;
   }

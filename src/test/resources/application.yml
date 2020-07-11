@@ -22,17 +22,22 @@ spring.temporal:
   alwaysSave: false
   workflows:
     one:
-      tasklist: one
+      taskQueue: one
       executiontimeout: 1000
       activityPoolSize: 100
       workflowPoolSize: 50
     two:
-      tasklist: two
+      taskQueue: two
       executiontimeout: 10000
       activityPoolSize: 100
       workflowPoolSize: 50
     HelloActivity:
-      tasklist: HelloActivity
+      taskQueue: HelloActivity
+      executiontimeout: 10000
+      activityPoolSize: 100
+      workflowPoolSize: 50
+    HelloAsyncActivityCompletion:
+      taskQueue: HelloAsyncActivityCompletion
       executiontimeout: 10000
       activityPoolSize: 100
       workflowPoolSize: 50

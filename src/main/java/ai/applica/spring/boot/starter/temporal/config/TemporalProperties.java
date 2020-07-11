@@ -41,7 +41,7 @@ public class TemporalProperties {
   @NoArgsConstructor
   public static class WorkflowOption {
 
-    private String taskList;
+    private String taskQueue;
 
     private Integer executionTimeout;
 

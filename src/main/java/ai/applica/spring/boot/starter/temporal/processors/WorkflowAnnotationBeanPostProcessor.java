@@ -22,6 +22,7 @@ import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
+import io.temporal.client.WorkflowClient;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
@@ -31,6 +32,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,9 +56,9 @@ import org.springframework.util.ReflectionUtils;
 public class WorkflowAnnotationBeanPostProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
 
-  private final WorkflowFactory workflowClientFactory;
   private final TemporalProperties temporalProperties;
   private final WorkerFactory workerFactory;
+  private final WorkflowClient workflowClient;
   private final Set<String> classes = new HashSet<>();
 
   private BeanFactory beanFactory;
@@ -96,9 +98,11 @@ public class WorkflowAnnotationBeanPostProcessor
 
       log.info("Registering worker for {}", targetClass);
 
-      WorkflowOption option = temporalProperties.getWorkflows().get(workflow.value());
+      Map<String, WorkflowOption> workflows = temporalProperties.getWorkflows();
+      String value = workflow.value();
+      WorkflowOption option = workflows.get(value);
 
-      Worker worker = workerFactory.newWorker(option.getTaskList(), getWorkerOptions(option));
+      Worker worker = workerFactory.newWorker(option.getTaskQueue(), getWorkerOptions(option));
 
       // We add activities instantions to worker
       List<Object> activities = new ArrayList<Object>();
@@ -121,7 +125,7 @@ public class WorkflowAnnotationBeanPostProcessor
 
       // we create the worker
       worker.registerWorkflowImplementationTypes(
-          workflowClientFactory.makeWorkflowClass(targetClass));
+          new WorkflowFactory(temporalProperties, workflowClient).makeWorkflowClass(targetClass));
 
       classes.add(bean.getClass().getName());
     }

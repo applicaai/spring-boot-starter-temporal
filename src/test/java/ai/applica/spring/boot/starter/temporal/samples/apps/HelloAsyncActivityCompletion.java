@@ -1,6 +1,4 @@
 /*
- *  Copyright (c) 2020 Applica.ai All Rights Reserved
- *
  *  Copyright (c) 2020 Temporal Technologies, Inc. All Rights Reserved
  *
  *  Copyright 2012-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -25,26 +23,29 @@ import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.activity.ActivityInterface;
-import io.temporal.activity.ActivityMethod;
+import io.temporal.client.ActivityCompletionClient;
+import io.temporal.client.WorkflowClient;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
- * Hello World Temporal workflow that executes a single activity. Requires a local instance the
- * Temporal service to be running.
+ * Demonstrates an asynchronous activity implementation. Requires a local instance of Temporal
+ * server to be running.
  */
-public class HelloActivity {
+public class HelloAsyncActivityCompletion {
 
-  static final String TASK_QUEUE = "HelloActivity";
+  static final String TASK_QUEUE = "HelloAsyncActivityCompletion";
 
-  /** Workflow interface has to have at least one method annotated with @WorkflowMethod. */
   @WorkflowInterface
   public interface GreetingWorkflow {
     /** @return greeting string */
@@ -52,14 +53,13 @@ public class HelloActivity {
     String getGreeting(String name);
   }
 
-  /** Activity interface is just a POJI. */
+  /** Activity interface is just a POJI. * */
   @ActivityInterface
   public interface GreetingActivities {
-    @ActivityMethod
     String composeGreeting(String greeting, String name);
   }
 
-  /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
+  /** GreetingWorkflow implementation that calls GreetingsActivities#printIt. */
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
@@ -79,21 +79,37 @@ public class HelloActivity {
     }
   }
 
-  @Service
-  static class SimpleExclamationBean {
-    public String getExclamation() {
-      return "!";
+  @Component
+  public static class GreetingActivitiesImpl implements GreetingActivities {
+    @Autowired private ActivityCompletionClient completionClient;
+
+    /** For _test_ perpose only to put completition client of TestEnvironment */
+    public void setCompletionClient(ActivityCompletionClient completionClient) {
+      this.completionClient = completionClient;
     }
-  }
-
-  @Service
-  static class GreetingActivitiesImpl implements GreetingActivities {
-
-    @Autowired private SimpleExclamationBean simpleExclamationBean;
-
+    /**
+     * Demonstrates how to implement an activity asynchronously. When {@link
+     * io.temporal.activity.ActivityExecutionContext#doNotCompleteOnReturn()} is called the activity
+     * implementation function returning doesn't complete the activity.
+     */
     @Override
     public String composeGreeting(String greeting, String name) {
-      return greeting + " " + name + simpleExclamationBean.getExclamation();
+      // TaskToken is a correlation token used to match an activity task with its completion
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      byte[] taskToken = context.getTaskToken();
+      // In real life this request can be executed anywhere. By a separate service for
+      // example.
+      ForkJoinPool.commonPool().execute(() -> composeGreetingAsync(taskToken, greeting, name));
+      context.doNotCompleteOnReturn();
+      // When doNotCompleteOnReturn() is invoked the return value is ignored.
+      return "ignored";
+    }
+
+    private void composeGreetingAsync(byte[] taskToken, String greeting, String name) {
+      String result = greeting + " " + name + "!";
+      // To complete an activity from a different thread or process use ActivityCompletionClient.
+      // In real applications the client is initialized by a process that performs the completion.
+      completionClient.complete(taskToken, result);
     }
   }
 
@@ -109,12 +125,11 @@ public class HelloActivity {
       GreetingWorkflow workflow =
           fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class);
 
-      // Execute a workflow waiting for it to complete. See {@link
-      // io.temporal.samples.hello.HelloSignal}
-      // for an example of starting workflow without waiting synchronously for its result.
-      String greeting = workflow.getGreeting("World");
+      // Execute a workflow asynchronously returning a future
+      // that can be used to wait for the workflow completion.
+      CompletableFuture<String> greeting = WorkflowClient.execute(workflow::getGreeting, "World");
       System.out.println("\n\n");
-      System.out.println(greeting);
+      System.out.println(greeting.get());
       System.out.println("\n\n");
       System.exit(0);
     }

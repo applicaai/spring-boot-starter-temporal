@@ -60,7 +60,9 @@ public class HelloActivityTest {
     worker = fact.makeWorker(GreetingWorkflowImpl.class, testEnv);
 
     // Get a workflow stub using the same task queue the worker uses.
-    workflow = fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv);
+    workflow =
+        fact.makeClient(
+            GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
   @After

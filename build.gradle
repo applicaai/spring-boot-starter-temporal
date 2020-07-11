@@ -61,7 +61,7 @@ tasks.withType(JavaCompile) {
 
 task execute(type: JavaExec) {
     main = findProperty("mainClass") ?: ""
-    classpath = sourceSets.main.runtimeClasspath
+    classpath sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
 }
 
 license {
