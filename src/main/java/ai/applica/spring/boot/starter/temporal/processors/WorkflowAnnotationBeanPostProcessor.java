@@ -100,9 +100,11 @@ public class WorkflowAnnotationBeanPostProcessor
 
       Map<String, WorkflowOption> workflows = temporalProperties.getWorkflows();
       String value = workflow.value();
-      WorkflowOption option = workflows.get(value);
-
-      Worker worker = workerFactory.newWorker(option.getTaskQueue(), getWorkerOptions(option));
+      WorkflowOption options = workflows.get(value);
+      if (options == null) {
+        throw new RuntimeException("No configuration defined for workflow: " + value);
+      }
+      Worker worker = workerFactory.newWorker(options.getTaskQueue(), getWorkerOptions(options));
 
       // We add activities instantions to worker
       List<Object> activities = new ArrayList<Object>();

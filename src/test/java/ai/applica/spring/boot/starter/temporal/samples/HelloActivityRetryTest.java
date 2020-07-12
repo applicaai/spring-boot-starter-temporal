@@ -70,7 +70,7 @@ public class HelloActivityRetryTest {
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = fact.makeWorker(GreetingWorkflowImpl.class, testEnv);
+    worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
 
     // Get a workflow stub using the same task queue the worker uses.
     workflow =

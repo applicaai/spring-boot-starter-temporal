@@ -46,4 +46,9 @@ spring.temporal:
       executiontimeout: 10000
       activityPoolSize: 100
       workflowPoolSize: 50
+    HelloChild:
+      taskQueue: HelloChild
+      executiontimeout: 10000
+      activityPoolSize: 100
+      workflowPoolSize: 50
     

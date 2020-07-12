@@ -76,7 +76,7 @@ public class HelloAsyncActivityCompletionTest {
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = fact.makeWorker(GreetingWorkflowImpl.class, testEnv);
+    worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
     client = testEnv.getWorkflowClient();
 
     workflow = fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class, client);

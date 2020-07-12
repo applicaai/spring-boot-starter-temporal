@@ -88,13 +88,19 @@ public class WorkflowFactory {
     return stub;
   }
 
-  public Worker makeWorker(Class<?> targetClass, TestWorkflowEnvironment testEnv) {
-    TemporalWorkflow workflowAnotation =
-        AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
-    WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
-
-    Worker worker = testEnv.newWorker(option.getTaskQueue());
-    worker.registerWorkflowImplementationTypes(makeWorkflowClass(targetClass));
+  public Worker makeWorker(TestWorkflowEnvironment testEnv, Class<?>... targetClasses) {
+    String taskQueue = null;
+    Class<?>[] types = new Class<?>[targetClasses.length];
+    int i = 0;
+    for (Class<?> targetClass : targetClasses) {
+      TemporalWorkflow workflowAnotation =
+          AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
+      WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
+      taskQueue = option.getTaskQueue();
+      types[i++] = makeWorkflowClass(targetClass);
+    }
+    Worker worker = testEnv.newWorker(taskQueue);
+    worker.registerWorkflowImplementationTypes(types);
     return worker;
   }
 
