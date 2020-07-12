@@ -51,4 +51,8 @@ spring.temporal:
       executiontimeout: 10000
       activityPoolSize: 100
       workflowPoolSize: 50
-    
+    HelloQuery:
+      taskQueue: HelloQuery
+      executiontimeout: 10000
+      activityPoolSize: 100
+      workflowPoolSize: 50
