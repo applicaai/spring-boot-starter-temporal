@@ -41,3 +41,9 @@ spring.temporal:
       executiontimeout: 10000
       activityPoolSize: 100
       workflowPoolSize: 50
+    HelloActivityRetry:
+      taskQueue: HelloActivityRetry
+      executiontimeout: 10000
+      activityPoolSize: 100
+      workflowPoolSize: 50
+    

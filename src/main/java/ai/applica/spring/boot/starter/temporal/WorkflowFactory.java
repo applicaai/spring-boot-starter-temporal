@@ -17,7 +17,6 @@
 
 package ai.applica.spring.boot.starter.temporal;
 
-import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
@@ -28,11 +27,8 @@ import io.temporal.client.WorkflowOptions.Builder;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import io.temporal.workflow.WorkflowMethod;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
@@ -111,20 +107,12 @@ public class WorkflowFactory {
 
     Method method = (Method) methods.toArray()[0];
 
-    List<Field> activitieFields = new ArrayList<Field>();
-    for (Field field : targetClass.getDeclaredFields()) {
-      ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
-      if (annotations.length > 0) {
-        activitieFields.add(field);
-      }
-    }
-
     Unloaded<?> beanU =
         new ByteBuddy()
             .subclass(targetClass)
             .implement(targetClass.getInterfaces()[0])
             .method(ElementMatchers.named(method.getName()))
-            .intercept(MethodDelegation.to(new ActivityStubIntercepter(activitieFields)))
+            .intercept(MethodDelegation.to(new ActivityStubIntercepter(targetClass)))
             .make();
     Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
     return beanL.getLoaded();

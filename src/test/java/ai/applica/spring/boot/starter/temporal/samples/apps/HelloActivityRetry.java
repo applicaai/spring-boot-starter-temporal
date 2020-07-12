@@ -22,12 +22,16 @@
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifier;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
-import io.temporal.activity.ActivityMethod;
+import io.temporal.activity.ActivityOptions;
+import io.temporal.common.RetryOptions;
+import io.temporal.workflow.Functions;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -35,14 +39,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 /**
- * Hello World Temporal workflow that executes a single activity. Requires a local instance the
- * Temporal service to be running.
+ * Demonstrates activity retries using an exponential backoff algorithm. Requires a local instance
+ * of the Temporal service to be running.
  */
-public class HelloActivity {
+public class HelloActivityRetry {
 
-  static final String TASK_QUEUE = "HelloActivity";
+  static final String TASK_QUEUE = "HelloActivityRetry";
 
-  /** Workflow interface has to have at least one method annotated with @WorkflowMethod. */
   @WorkflowInterface
   public interface GreetingWorkflow {
     /** @return greeting string */
@@ -50,48 +53,63 @@ public class HelloActivity {
     String getGreeting(String name);
   }
 
-  /** Activity interface is just a POJI. */
   @ActivityInterface
   public interface GreetingActivities {
-    @ActivityMethod
     String composeGreeting(String greeting, String name);
   }
 
-  /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
+  /**
+   * GreetingWorkflow implementation that demonstrates activity stub configured with {@link
+   * RetryOptions}.
+   */
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
 
     /**
-     * Activity stub implements activity interface and proxies calls to it to Temporal activity
-     * invocations. Because activities are reentrant, only a single stub can be used for multiple
-     * activity invocations.
+     * To enable activity retry set {@link RetryOptions} on {@link ActivityOptions}. It also works
+     * for activities invoked through {@link io.temporal.workflow.Async#function(Functions.Func)}
+     * and for child workflows.
      */
     @ActivityStub(durationInSeconds = 10)
     private GreetingActivities activities;
 
+    @ActivityOptionsModifier
+    private ActivityOptions.Builder modifiOptions(
+        Class<GreetingActivities> cls, ActivityOptions.Builder options) {
+      options.setRetryOptions(
+          RetryOptions.newBuilder()
+              .setInitialInterval(Duration.ofSeconds(1))
+              .setDoNotRetry(IllegalArgumentException.class.getName())
+              .build());
+      return options;
+    }
+
     @Override
     public String getGreeting(String name) {
-      // This is a blocking call that returns only after the activity has completed.
+      // This is a blocking call that returns only after activity is completed.
       return activities.composeGreeting("Hello", name);
     }
   }
 
   @Service
-  static class SimpleExclamationBean {
-    public String getExclamation() {
-      return "!";
-    }
-  }
-
-  @Service
-  static class GreetingActivitiesImpl implements GreetingActivities {
-
-    @Autowired private SimpleExclamationBean simpleExclamationBean;
+  public static class GreetingActivitiesImpl implements GreetingActivities {
+    private int callCount;
+    private long lastInvocationTime;
 
     @Override
-    public String composeGreeting(String greeting, String name) {
-      return greeting + " " + name + simpleExclamationBean.getExclamation();
+    public synchronized String composeGreeting(String greeting, String name) {
+      if (lastInvocationTime != 0) {
+        long timeSinceLastInvocation = System.currentTimeMillis() - lastInvocationTime;
+        System.out.print(timeSinceLastInvocation + " milliseconds since last invocation. ");
+      }
+      lastInvocationTime = System.currentTimeMillis();
+      if (++callCount < 4) {
+        System.out.println("composeGreeting activity is going to fail");
+        throw new IllegalStateException("not yet");
+      }
+      System.out.println("composeGreeting activity is going to complete");
+      return greeting + " " + name + "!";
     }
   }
   // FIXME

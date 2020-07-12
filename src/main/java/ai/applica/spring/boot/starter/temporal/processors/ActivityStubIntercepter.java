@@ -17,43 +17,96 @@
 
 package ai.applica.spring.boot.starter.temporal.processors;
 
+import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifier;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import io.temporal.activity.ActivityOptions;
+import io.temporal.activity.ActivityOptions.Builder;
 import io.temporal.workflow.Workflow;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;
 import net.bytebuddy.implementation.bind.annotation.This;
+import org.springframework.core.MethodIntrospector;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
+@Slf4j
 public class ActivityStubIntercepter {
-  private List<Field> activitieFields;
+  private Class<?> targetClass;
 
-  public ActivityStubIntercepter(List<Field> activitieFields) {
-    this.activitieFields = activitieFields;
+  public ActivityStubIntercepter(Class<?> targetClass) {
+    this.targetClass = targetClass;
   }
 
   @RuntimeType
   public Object process(@This Object obj, @SuperCall Callable<Object> call) throws Exception {
-    activitieFields.forEach(
-        field -> {
-          ActivityStub asc = field.getAnnotation(ActivityStub.class);
-          Object was =
-              Workflow.newActivityStub(
-                  field.getType(),
-                  ActivityOptions.newBuilder()
-                      .setScheduleToCloseTimeout(Duration.ofSeconds(asc.durationInSeconds()))
-                      .build());
-          try {
-            ReflectionUtils.makeAccessible(field);
+
+    for (Field field : targetClass.getDeclaredFields()) {
+      // Check for our annotation
+      ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
+      if (annotations.length > 0) {
+        ReflectionUtils.makeAccessible(field);
+        try {
+          if (field.get(obj) == null) {
+            ActivityStub activitiStubAnnotation = field.getAnnotation(ActivityStub.class);
+            Object was =
+                Workflow.newActivityStub(
+                    field.getType(), buildOptions(obj, activitiStubAnnotation, field));
             field.set(obj, was);
-          } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            log.debug(
+                "ActivityStub created for activiti "
+                    + field.getType()
+                    + " on workflow "
+                    + obj.getClass().getSimpleName());
+          } else {
+            log.debug(
+                "ActivityStub not created for activiti "
+                    + field.getType()
+                    + " on workflow "
+                    + obj.getClass().getSimpleName()
+                    + " field not null");
           }
-        });
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
     return call.call();
+  }
+
+  private ActivityOptions buildOptions(
+      Object target, ActivityStub activitiStubAnnotation, Field field) {
+    // Build default options
+    Builder options = ActivityOptions.newBuilder();
+    options.setScheduleToCloseTimeout(
+        Duration.ofSeconds(activitiStubAnnotation.durationInSeconds()));
+    // chk for modifier
+    Set<Method> methods =
+        MethodIntrospector.selectMethods(
+            targetClass,
+            (ReflectionUtils.MethodFilter)
+                method ->
+                    AnnotationUtils.findAnnotation(method, ActivityOptionsModifier.class) != null
+                        && method.getParameterTypes()[0] == field.getType());
+    if (methods.size() > 0) {
+      Method method = (Method) methods.toArray()[0];
+      log.debug("Found options modifier by name " + method.getName() + " on object " + targetClass);
+      ReflectionUtils.makeAccessible(method);
+      try {
+        options = (Builder) method.invoke(target, field.getType(), options);
+      } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      log.debug(
+          "Not options modifier method found for " + field.getName() + " on object " + targetClass);
+    }
+    return options.build();
   }
 }

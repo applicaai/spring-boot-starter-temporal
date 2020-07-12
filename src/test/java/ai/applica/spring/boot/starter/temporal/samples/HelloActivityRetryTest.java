@@ -22,35 +22,30 @@
 package ai.applica.spring.boot.starter.temporal.samples;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingActivitiesImpl;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingWorkflowImpl;
-import io.temporal.client.ActivityCompletionClient;
-import io.temporal.client.WorkflowClient;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingActivities;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflowImpl;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.rules.Timeout;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-/** Unit test for {@link HelloAsyncActivityCompletion}. Doesn't use an external Temporal service. */
+/** Unit test for {@link HelloActivityRetry}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
 @SpringBootTest()
-public class HelloAsyncActivityCompletionTest {
-
-  @Rule public Timeout globalTimeout = Timeout.seconds(2);
+public class HelloActivityRetryTest {
 
   /** Prints a history of the workflow under test in case of a test failure. */
   @Rule
@@ -67,19 +62,20 @@ public class HelloAsyncActivityCompletionTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
-  private GreetingWorkflow workflow;
-  private WorkflowClient client;
+  GreetingWorkflow workflow;
 
-  private @Autowired WorkflowFactory fact;
-  // // private @Autowired GreetingActivities activities;
+  @Autowired WorkflowFactory fact;
+  @Autowired GreetingActivities greatActivity;
 
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     worker = fact.makeWorker(GreetingWorkflowImpl.class, testEnv);
-    client = testEnv.getWorkflowClient();
 
-    workflow = fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class, client);
+    // Get a workflow stub using the same task queue the worker uses.
+    workflow =
+        fact.makeClient(
+            GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
   @After
@@ -88,16 +84,31 @@ public class HelloAsyncActivityCompletionTest {
   }
 
   @Test
-  public void testActivityImpl() throws ExecutionException, InterruptedException {
-    ActivityCompletionClient completionClient = client.newActivityCompletionClient();
-    GreetingActivitiesImpl greetingActivitiesImpl = new GreetingActivitiesImpl();
-    greetingActivitiesImpl.setCompletionClient(completionClient);
-    worker.registerActivitiesImplementations(greetingActivitiesImpl);
+  public void testActivityImpl() {
+    worker.registerActivitiesImplementations(greatActivity);
     testEnv.start();
 
-    // Execute a workflow asynchronously.
-    CompletableFuture<String> greeting = WorkflowClient.execute(workflow::getGreeting, "World");
-    // Wait for workflow completion.
-    assertEquals("Hello World!", greeting.get());
+    // Execute a workflow waiting for it to complete.
+    String greeting = workflow.getGreeting("World");
+    assertEquals("Hello World!", greeting);
+  }
+
+  @Test(timeout = 1000)
+  public void testMockedActivity() {
+    GreetingActivities activities = mock(GreetingActivities.class);
+    when(activities.composeGreeting("Hello", "World"))
+        .thenThrow(
+            new IllegalStateException("not yet1"),
+            new IllegalStateException("not yet2"),
+            new IllegalStateException("not yet3"))
+        .thenReturn("Hello World!");
+    worker.registerActivitiesImplementations(activities);
+    testEnv.start();
+
+    // Execute a workflow waiting for it to complete.
+    String greeting = workflow.getGreeting("World");
+    assertEquals("Hello World!", greeting);
+
+    verify(activities, times(4)).composeGreeting(anyString(), anyString());
   }
 }

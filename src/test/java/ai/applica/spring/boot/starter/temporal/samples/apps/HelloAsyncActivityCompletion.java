@@ -1,4 +1,6 @@
 /*
+ *  Copyright (c) 2020 Applica.ai All Rights Reserved
+ *
  *  Copyright (c) 2020 Temporal Technologies, Inc. All Rights Reserved
  *
  *  Copyright 2012-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -21,7 +23,6 @@ package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
-import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
@@ -35,7 +36,6 @@ import java.util.concurrent.ForkJoinPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
 /**
@@ -112,9 +112,9 @@ public class HelloAsyncActivityCompletion {
       completionClient.complete(taskToken, result);
     }
   }
-
-  @EnableTemporal
-  @SpringBootApplication
+  // FIXME
+  // @EnableTemporal
+  // @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;
