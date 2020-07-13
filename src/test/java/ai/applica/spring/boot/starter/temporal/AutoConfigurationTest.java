@@ -40,12 +40,12 @@ public class AutoConfigurationTest {
     //   // TODO Auto-generated catch block
     //   e.printStackTrace();
     // }
-    HelloWorkflow impl = fact.makeClient(HelloWorkflow.class, HelloWorkflowImpl.class);
+    HelloWorkflow impl = fact.makeStub(HelloWorkflow.class, HelloWorkflowImpl.class);
     assertNotNull(impl.process());
 
     Builder options = fact.defaultOptionsBuilder(HelloWorkflowImplTwo.class);
     options.setWorkflowId("workflowId-1");
-    HelloWorkflow impl2 = fact.makeClient(HelloWorkflow.class, options);
+    HelloWorkflow impl2 = fact.makeStub(HelloWorkflow.class, options);
     assertNotNull(impl2.process());
   }
 }

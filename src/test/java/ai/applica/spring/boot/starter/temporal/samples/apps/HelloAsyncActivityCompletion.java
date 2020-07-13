@@ -122,8 +122,7 @@ public class HelloAsyncActivityCompletion {
     public void run(String... input) throws Exception {
       // Start a workflow execution. Usually this is done from another program or bean.
       // Uses task queue from the GreetingWorkflow @WorkflowMethod annotation.
-      GreetingWorkflow workflow =
-          fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class);
+      GreetingWorkflow workflow = fact.makeStub(GreetingWorkflow.class, GreetingWorkflowImpl.class);
 
       // Execute a workflow asynchronously returning a future
       // that can be used to wait for the workflow completion.

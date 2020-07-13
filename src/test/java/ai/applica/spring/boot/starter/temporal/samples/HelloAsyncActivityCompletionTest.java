@@ -79,7 +79,7 @@ public class HelloAsyncActivityCompletionTest {
     worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
     client = testEnv.getWorkflowClient();
 
-    workflow = fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class, client);
+    workflow = fact.makeStub(GreetingWorkflow.class, GreetingWorkflowImpl.class, client);
   }
 
   @After

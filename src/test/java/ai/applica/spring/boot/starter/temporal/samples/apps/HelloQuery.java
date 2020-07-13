@@ -79,8 +79,7 @@ public class HelloQuery {
     public void run(String... input) throws Exception {
       // Start a workflow execution. Usually this is done from another program or bean.
       // Uses task queue from the GreetingWorkflow @WorkflowMethod annotation.
-      GreetingWorkflow workflow =
-          fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class);
+      GreetingWorkflow workflow = fact.makeStub(GreetingWorkflow.class, GreetingWorkflowImpl.class);
 
       // Start workflow asynchronously to not use another thread to query.
       WorkflowClient.start(workflow::createGreeting, "World");

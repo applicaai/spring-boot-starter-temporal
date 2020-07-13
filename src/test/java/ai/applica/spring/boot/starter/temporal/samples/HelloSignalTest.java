@@ -22,11 +22,14 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.Assert.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloSignal.GreetingWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloSignal.GreetingWorkflowImpl;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+import io.temporal.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.testing.TestWorkflowEnvironment;
 import java.time.Duration;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,10 +41,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-/** Unit test for {@link HelloQuery}. Doesn't use an external Temporal service. */
+/** Unit test for {@link HelloSignal}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
-@SpringBootTest()
-public class HelloQueryTest {
+@SpringBootTest
+public class HelloSignalTest {
 
   /** Prints a history of the workflow under test in case of a test failure. */
   @Rule
@@ -57,7 +60,7 @@ public class HelloQueryTest {
       };
 
   private TestWorkflowEnvironment testEnv;
-  GreetingWorkflow workflow;
+  private WorkflowClient client;
 
   @Autowired WorkflowFactory fact;
 
@@ -65,11 +68,8 @@ public class HelloQueryTest {
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
-
-    // Get a workflow stub using the same task queue the worker uses.
-    workflow =
-        fact.makeStub(
-            GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
+    testEnv.start();
+    client = testEnv.getWorkflowClient();
   }
 
   @After
@@ -78,22 +78,35 @@ public class HelloQueryTest {
   }
 
   @Test(timeout = 5000)
-  public void testQuery() {
-    testEnv.start();
-    // Start workflow asynchronously to not use another thread to query.
-    WorkflowClient.start(workflow::createGreeting, "World");
+  public void testSignal() {
+    WorkflowOptions.Builder workflowOptions =
+        fact.defaultOptionsBuilder(GreetingWorkflowImpl.class);
+    // Get a workflow stub using the same task queue the worker uses.
+    workflowOptions.setWorkflowIdReusePolicy(
+        WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE);
+
+    GreetingWorkflow workflow = fact.makeStub(GreetingWorkflow.class, workflowOptions, client);
+
+    // Start workflow asynchronously to not use another thread to signal.
+    WorkflowClient.start(workflow::getGreetings);
 
     // After start for getGreeting returns, the workflow is guaranteed to be started.
-    // So we can send a signal to it using workflow stub.
-    assertEquals("Hello World!", workflow.queryGreeting());
-
-    // Unit tests should call TestWorkflowEnvironment.sleep.
-    // It allows skipping the time if workflow is just waiting on a timer
-    // and executing tests of long running workflows very fast.
-    // Note that this unit test executes under a second and not
-    // over 3 as it would if Thread.sleep(3000) was called.
-    testEnv.sleep(Duration.ofSeconds(3));
-
-    assertEquals("Bye World!", workflow.queryGreeting());
+    // So we can send a signal to it using workflow stub immediately.
+    // But just to demonstrate the unit testing of a long running workflow adding a long sleep here.
+    testEnv.sleep(Duration.ofDays(1));
+    // This workflow keeps receiving signals until exit is called
+    workflow.waitForName("World");
+    workflow.waitForName("Universe");
+    workflow.exit();
+    // Calling synchronous getGreeting after workflow has started reconnects to the existing
+    // workflow and
+    // blocks until result is available. Note that this behavior assumes that WorkflowOptions are
+    // not configured
+    // with WorkflowIdReusePolicy.AllowDuplicate. In that case the call would fail with
+    // WorkflowExecutionAlreadyStartedException.
+    List<String> greetings = workflow.getGreetings();
+    assertEquals(2, greetings.size());
+    assertEquals("Hello World!", greetings.get(0));
+    assertEquals("Hello Universe!", greetings.get(1));
   }
 }

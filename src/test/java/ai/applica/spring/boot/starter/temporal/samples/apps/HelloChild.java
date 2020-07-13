@@ -93,8 +93,7 @@ public class HelloChild {
     public void run(String... input) throws Exception {
       // Start a workflow execution. Usually this is done from another program or bean.
       // Uses task queue from the GreetingWorkflow @WorkflowMethod annotation.
-      GreetingWorkflow workflow =
-          fact.makeClient(GreetingWorkflow.class, GreetingWorkflowImpl.class);
+      GreetingWorkflow workflow = fact.makeStub(GreetingWorkflow.class, GreetingWorkflowImpl.class);
 
       // Execute a workflow waiting for it to complete. See {@link
       // io.temporal.samples.hello.HelloSignal}

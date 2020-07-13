@@ -50,14 +50,14 @@ public class WorkflowFactory {
   private final TemporalProperties temporalProperties;
   private final WorkflowClient workflowClient;
 
-  public <T> T makeClient(Class<T> workflowInterface, Class<? extends T> workflowClass) {
+  public <T> T makeStub(Class<T> workflowInterface, Class<? extends T> workflowClass) {
 
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
-    return makeClient(workflowInterface, optionsBuilder);
+    return makeStub(workflowInterface, optionsBuilder);
   }
 
-  public <T> T makeClient(Class<T> workflowInterface, Builder optionsBuilder) {
-    return makeClient(workflowInterface, optionsBuilder, null);
+  public <T> T makeStub(Class<T> workflowInterface, Builder optionsBuilder) {
+    return makeStub(workflowInterface, optionsBuilder, null);
   }
 
   public Builder defaultOptionsBuilder(Class<?> workflowClass) {
@@ -70,15 +70,15 @@ public class WorkflowFactory {
         .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout()));
   }
 
-  public <T> T makeClient(
+  public <T> T makeStub(
       Class<T> workflowInterface,
       Class<? extends T> workflowClass,
       WorkflowClient testWorkflowClient) {
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
-    return makeClient(workflowInterface, optionsBuilder, testWorkflowClient);
+    return makeStub(workflowInterface, optionsBuilder, testWorkflowClient);
   }
 
-  public <T> T makeClient(
+  public <T> T makeStub(
       Class<T> workflowInterface, Builder optionsBuilder, WorkflowClient testWorkflowClient) {
     WorkflowClient lwc = workflowClient;
     if (testWorkflowClient != null) {
