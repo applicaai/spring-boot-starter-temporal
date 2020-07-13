@@ -69,7 +69,7 @@ public class HelloAsyncActivityCompletion {
      * invocations. Because activities are reentrant, only a single stub can be used for multiple
      * activity invocations.
      */
-    @ActivityStub(durationInSeconds = 10)
+    @ActivityStub(duration = 10)
     private GreetingActivities activities;
 
     @Override

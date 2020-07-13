@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import lombok.extern.slf4j.Slf4j;
@@ -85,7 +86,9 @@ public class ActivityStubIntercepter {
     // Build default options
     Builder options = ActivityOptions.newBuilder();
     options.setScheduleToCloseTimeout(
-        Duration.ofSeconds(activitiStubAnnotation.durationInSeconds()));
+        Duration.of(
+            activitiStubAnnotation.duration(),
+            ChronoUnit.valueOf(activitiStubAnnotation.durationUnits())));
     // chk for modifier
     Set<Method> methods =
         MethodIntrospector.selectMethods(

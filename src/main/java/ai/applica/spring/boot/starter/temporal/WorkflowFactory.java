@@ -29,6 +29,7 @@ import io.temporal.worker.Worker;
 import io.temporal.workflow.WorkflowMethod;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
@@ -41,7 +42,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Factory to instantiate workers based on bean wersions of workflows. Plus conviniet methods to
+ * Factory to instantiate workers based on bean versions of workflows. Plus conviniet methods to
  * build stubs for workflows based on configuration.
  */
 @RequiredArgsConstructor
@@ -49,27 +50,82 @@ public class WorkflowFactory {
 
   private final TemporalProperties temporalProperties;
   private final WorkflowClient workflowClient;
-
+  /**
+   * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
+   * taken from properties based on annotation of implementation class.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param workflowClass
+   * @return
+   */
   public <T> T makeStub(Class<T> workflowInterface, Class<? extends T> workflowClass) {
 
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
     return makeStub(workflowInterface, optionsBuilder);
   }
+  /**
+   * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
+   * taken from properties by name given.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param workflowName
+   * @return
+   */
+  public <T> T makeStub(Class<T> workflowInterface, String workflowName) {
 
+    Builder optionsBuilder = defaultOptionsBuilder(workflowName);
+    return makeStub(workflowInterface, optionsBuilder);
+  }
+  /**
+   * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code>.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param optionsBuilder
+   * @return
+   */
   public <T> T makeStub(Class<T> workflowInterface, Builder optionsBuilder) {
     return makeStub(workflowInterface, optionsBuilder, null);
   }
-
+  /**
+   * Prepares option builder based on workflow class annotation and spring properties.
+   *
+   * @param workflowClass
+   * @return
+   */
   public Builder defaultOptionsBuilder(Class<?> workflowClass) {
-    TemporalWorkflow workflow =
+    TemporalWorkflow workflowAnnotation =
         AnnotationUtils.findAnnotation(workflowClass, TemporalWorkflow.class);
 
-    WorkflowOption option = temporalProperties.getWorkflows().get(workflow.value());
+    return defaultOptionsBuilder(workflowAnnotation.value());
+  }
+  /**
+   * Prepares option builder based on workflow name from spring properties.
+   *
+   * @param workflowName
+   * @return
+   */
+  public Builder defaultOptionsBuilder(String workflowName) {
+    WorkflowOption option = temporalProperties.getWorkflows().get(workflowName);
     return WorkflowOptions.newBuilder()
         .setTaskQueue(option.getTaskQueue())
-        .setWorkflowExecutionTimeout(Duration.ofSeconds(option.getExecutionTimeout()));
+        .setWorkflowExecutionTimeout(
+            Duration.of(
+                option.getExecutionTimeout(),
+                ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
   }
-
+  /**
+   * Prepares option builder based on workflow class annotation and spring properties. Test version
+   * of makeStub method.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param workflowClass
+   * @param testWorkflowClient
+   * @return
+   */
   public <T> T makeStub(
       Class<T> workflowInterface,
       Class<? extends T> workflowClass,
@@ -77,7 +133,31 @@ public class WorkflowFactory {
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
     return makeStub(workflowInterface, optionsBuilder, testWorkflowClient);
   }
-
+  /**
+   * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
+   * taken from properties by name given. Test version of makeStub method.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param workflowName
+   * @param testWorkflowClient
+   * @return
+   */
+  public <T> T makeStub(
+      Class<T> workflowInterface, String workflowName, WorkflowClient testWorkflowClient) {
+    Builder optionsBuilder = defaultOptionsBuilder(workflowName);
+    return makeStub(workflowInterface, optionsBuilder, testWorkflowClient);
+  }
+  /**
+   * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code>. Test version of
+   * makeStub method.
+   *
+   * @param <T>
+   * @param workflowInterface
+   * @param optionsBuilder
+   * @param testWorkflowClient
+   * @return
+   */
   public <T> T makeStub(
       Class<T> workflowInterface, Builder optionsBuilder, WorkflowClient testWorkflowClient) {
     WorkflowClient lwc = workflowClient;
@@ -87,7 +167,14 @@ public class WorkflowFactory {
     T stub = lwc.newWorkflowStub(workflowInterface, optionsBuilder.build());
     return stub;
   }
-
+  /**
+   * Test version of making workers. On production it is done automaticly. Remember not to use
+   * uprocessed classes that are not beans and will not work or not work properly.
+   *
+   * @param testEnv
+   * @param targetClasses
+   * @return
+   */
   public Worker makeWorker(TestWorkflowEnvironment testEnv, Class<?>... targetClasses) {
     String taskQueue = null;
     Class<?>[] types = new Class<?>[targetClasses.length];
@@ -103,7 +190,15 @@ public class WorkflowFactory {
     worker.registerWorkflowImplementationTypes(types);
     return worker;
   }
-
+  /**
+   * Test version of making worker classes to be used with <code>
+   * Worker#addWorkflowImplementationFactory</code>. As to provide some partial mocking or somthing
+   * similar. Remember not to use uprocessed classes that are not beans and will not work or not
+   * work properly.
+   *
+   * @param targetClass
+   * @return
+   */
   public Class<?> makeWorkflowClass(Class<?> targetClass) {
     Set<Method> methods =
         MethodIntrospector.selectMethods(

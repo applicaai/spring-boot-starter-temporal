@@ -22,6 +22,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotate method to change options for activity stub in a workflow. Method will be methed to
+ * activity stub based on first argument type.
+ *
+ * <pre>
+ * &#064;ActivityOptionsModifier
+ * private ActivityOptions.Builder modifiOptions(
+ *     Class<SomeActivitieInterface> ifs, ActivityOptions.Builder options) {
+ *  options.setHeartbeatTimeout(Duration.ofSeconds(2)).build());
+ *  return options;
+ * }
+ * </pre>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface ActivityOptionsModifier {}

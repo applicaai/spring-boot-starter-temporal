@@ -18,48 +18,29 @@
 spring.temporal:
   # host: localhost
   # port: 7233
-  # domain: sample
-  # alwaysSave: false
   # useSsl: false
+  workflowDefaults:
+    executiontimeout: 1000
+    executiontimeoutUnit: SECONDS
+    activityPoolSize: 100
+    workflowPoolSize: 50
   workflows:
     one:
       taskQueue: one
-      executiontimeout: 1000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     two:
       taskQueue: two
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloActivity:
       taskQueue: HelloActivity
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloAsyncActivityCompletion:
       taskQueue: HelloAsyncActivityCompletion
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloActivityRetry:
       taskQueue: HelloActivityRetry
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloChild:
       taskQueue: HelloChild
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloQuery:
       taskQueue: HelloQuery
-      executiontimeout: 10000
-      activityPoolSize: 100
-      workflowPoolSize: 50
     HelloSignal:
       taskQueue: HelloSignal
-      executiontimeout: 10000000
-      activityPoolSize: 100
-      workflowPoolSize: 50
+      executiontimeout: 10
+      executiontimeoutUnit: DAYS
     

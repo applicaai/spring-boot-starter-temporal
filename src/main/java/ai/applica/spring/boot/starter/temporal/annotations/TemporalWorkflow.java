@@ -22,7 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Indicates that service is an appropriate temporal workflow implementation */
+/**
+ * Indicates that service is an appropriate temporal workflow implementation one must specify name
+ * of workflow for parameters retrieval.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface TemporalWorkflow {

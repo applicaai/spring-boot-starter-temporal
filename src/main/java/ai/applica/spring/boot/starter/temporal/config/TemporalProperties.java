@@ -29,15 +29,15 @@ public class TemporalProperties {
 
   private String host;
 
-  private String domain;
-
   private Integer port;
 
   private Boolean useSsl;
 
-  private Boolean alwaysSave;
+  private WorkflowOption workflowDefaults;
 
   private Map<String, WorkflowOption> workflows;
+
+  private boolean addedDefaultsToWorkflows = false;
 
   @Data
   @NoArgsConstructor
@@ -45,10 +45,36 @@ public class TemporalProperties {
 
     private String taskQueue;
 
-    private Integer executionTimeout;
+    private Long executionTimeout;
+
+    private String executionTimeoutUnit;
 
     private Integer activityPoolSize;
 
     private Integer workflowPoolSize;
+  }
+
+  public Map<String, WorkflowOption> getWorkflows() {
+    if (!addedDefaultsToWorkflows) {
+      synchronized (this) {
+        workflows.forEach(
+            (key, value) -> {
+              if (value.getExecutionTimeout() == null) {
+                value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());
+              }
+              if (value.getExecutionTimeoutUnit() == null) {
+                value.setExecutionTimeoutUnit(workflowDefaults.getExecutionTimeoutUnit());
+              }
+              if (value.getActivityPoolSize() == null) {
+                value.setActivityPoolSize(workflowDefaults.getActivityPoolSize());
+              }
+              if (value.getWorkflowPoolSize() == null) {
+                value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
+              }
+              addedDefaultsToWorkflows = true;
+            });
+      }
+    }
+    return workflows;
   }
 }

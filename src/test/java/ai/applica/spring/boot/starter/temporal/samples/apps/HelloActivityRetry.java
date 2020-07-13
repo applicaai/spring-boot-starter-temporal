@@ -71,7 +71,7 @@ public class HelloActivityRetry {
      * for activities invoked through {@link io.temporal.workflow.Async#function(Functions.Func)}
      * and for child workflows.
      */
-    @ActivityStub(durationInSeconds = 10)
+    @ActivityStub(duration = 10, durationUnits = "SECONDS")
     private GreetingActivities activities;
 
     @ActivityOptionsModifier

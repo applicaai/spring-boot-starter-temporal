@@ -22,8 +22,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
+ * duration unit being ChronoUnit string equivalent.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
-  int durationInSeconds();
+  long duration();
+
+  String durationUnits() default "SECONDS";
 }
