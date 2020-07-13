@@ -41,8 +41,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * E - workflow interface I - workflow implementation Two parameters so to autowire both by
- * interface and implementation
+ * Factory to instantiate workers based on bean wersions of workflows. Plus conviniet methods to
+ * build stubs for workflows based on configuration.
  */
 @RequiredArgsConstructor
 public class WorkflowFactory {

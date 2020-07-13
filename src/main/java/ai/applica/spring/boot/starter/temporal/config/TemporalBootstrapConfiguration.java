@@ -20,9 +20,11 @@ package ai.applica.spring.boot.starter.temporal.config;
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.processors.WorkflowAnnotationBeanPostProcessor;
+import io.grpc.ManagedChannelBuilder;
 import io.temporal.client.ActivityCompletionClient;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -55,10 +57,26 @@ public class TemporalBootstrapConfiguration {
 
   @Bean
   public WorkflowClient defaultClient(TemporalProperties temporalProperties) {
+    WorkflowServiceStubs service;
     // Get worker to poll the common task queue.
     // gRPC stubs wrapper that talks to the local docker instance of temporal service.
-    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
-
+    if (temporalProperties.getHost() != null) {
+      ManagedChannelBuilder<?> channel =
+          ManagedChannelBuilder.forAddress(
+              temporalProperties.getHost(), temporalProperties.getPort());
+      if (!temporalProperties.getUseSsl()) {
+        channel.usePlaintext();
+      }
+      WorkflowServiceStubsOptions options =
+          WorkflowServiceStubsOptions.newBuilder()
+              .setChannel(channel.build())
+              .setEnableHttps(temporalProperties.getUseSsl())
+              .build();
+      service = WorkflowServiceStubs.newInstance(options);
+    } else {
+      // Get the default connection for the local docker
+      service = WorkflowServiceStubs.newInstance();
+    }
     return WorkflowClient.newInstance(service);
   }
 }

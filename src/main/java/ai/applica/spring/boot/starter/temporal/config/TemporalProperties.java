@@ -33,6 +33,8 @@ public class TemporalProperties {
 
   private Integer port;
 
+  private Boolean useSsl;
+
   private Boolean alwaysSave;
 
   private Map<String, WorkflowOption> workflows;

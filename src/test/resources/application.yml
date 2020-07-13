@@ -16,10 +16,11 @@
 #
 
 spring.temporal:
-  host: localhost
-  port: 7933
-  domain: sample
-  alwaysSave: false
+  # host: localhost
+  # port: 7233
+  # domain: sample
+  # alwaysSave: false
+  # useSsl: false
   workflows:
     one:
       taskQueue: one

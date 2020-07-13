@@ -36,12 +36,7 @@ public class RegisterDomain {
 
   @EventListener
   public void register(ContextRefreshedEvent event) throws Exception {
-    // log.debug("trying to register domain :{} using host:{} and port:{}",
-    // temporalProperties.getDomain(),
-    //     temporalProperties.getHost(), temporalProperties.getPort());
 
-    // IWorkflowService temporalService = new WorkflowServiceTChannel(
-    //     temporalProperties.getHost(), temporalProperties.getPort());
     // RegisterDomainRequest request = new RegisterDomainRequest();
     // request.setDescription("sample domain");
     // request.setEmitMetric(false);
