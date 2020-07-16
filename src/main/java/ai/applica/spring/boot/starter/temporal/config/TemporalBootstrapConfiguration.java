@@ -23,10 +23,12 @@ import ai.applica.spring.boot.starter.temporal.processors.WorkflowAnnotationBean
 import io.grpc.ManagedChannelBuilder;
 import io.temporal.client.ActivityCompletionClient;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +41,10 @@ import org.springframework.context.annotation.Import;
 @Import(WorkflowAnnotationBeanPostProcessor.class)
 @RequiredArgsConstructor
 public class TemporalBootstrapConfiguration {
+
+  @Autowired(required = false)
+  TemporalOptionsConfiguration temproalOptionsConfiguration;
+
   @Bean
   public ActivityCompletionClient defaultActivitiCompletitionClient(
       TemporalProperties temporalProperties) {
@@ -77,6 +83,12 @@ public class TemporalBootstrapConfiguration {
       // Get the default connection for the local docker
       service = WorkflowServiceStubs.newInstance();
     }
-    return WorkflowClient.newInstance(service);
+    if (temproalOptionsConfiguration != null) {
+      WorkflowClientOptions.Builder optionsBuilder =
+          temproalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
+      return WorkflowClient.newInstance(service, optionsBuilder.build());
+    } else {
+      return WorkflowClient.newInstance(service);
+    }
   }
 }

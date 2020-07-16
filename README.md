@@ -123,7 +123,7 @@ builder as second argument.
 private GreetingActivities activities;
 
 @ActivityOptionsModifier
-private ActivityOptions.Builder modifiOptions(
+private ActivityOptions.Builder modifyOptions(
     Class<GreetingActivities> cls, ActivityOptions.Builder options) {
   options.setHeartbeatTimeout(Duration.ofSeconds(2)).build());
   return options;
@@ -135,3 +135,27 @@ private ActivityOptions.Builder modifiOptions(
 Use `WorkflowFactory#defaultOptionsBuilder` and pass options builder to 
 `WorkflowFactory#makeStub`.
 
+### Adding default options to stubs and to workers
+
+Use `TemporalOptionsConfiguration` class instantiated as a bean in your configuration.
+Like this:
+```java
+public class TestTemporalOptionsConfiguration implements TemporalOptionsConfiguration {
+
+  @Override
+  public WorkflowClientOptions.Builder modifyClientOptions(
+      WorkflowClientOptions.Builder newBuilder) {
+    return newBuilder;
+  }
+
+  @Override
+  public WorkflowOptions.Builder modifyDefalutStubOptions(
+      WorkflowOptions.Builder newBuilder) {
+    return newBuilder;
+  }
+}
+```
+
+### Writing tests
+
+Pleas look into test directory `samples` folder in the sources.

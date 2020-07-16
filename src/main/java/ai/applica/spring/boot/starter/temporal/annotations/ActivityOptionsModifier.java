@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * &#064;ActivityOptionsModifier
- * private ActivityOptions.Builder modifiOptions(
+ * private ActivityOptions.Builder modifyOptions(
  *     Class<SomeActivitieInterface> ifs, ActivityOptions.Builder options) {
  *  options.setHeartbeatTimeout(Duration.ofSeconds(2)).build());
  *  return options;

@@ -75,7 +75,7 @@ public class HelloActivityRetry {
     private GreetingActivities activities;
 
     @ActivityOptionsModifier
-    private ActivityOptions.Builder modifiOptions(
+    private ActivityOptions.Builder modifyOptions(
         Class<GreetingActivities> cls, ActivityOptions.Builder options) {
       options.setRetryOptions(
           RetryOptions.newBuilder()

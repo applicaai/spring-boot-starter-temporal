@@ -18,6 +18,7 @@
 package ai.applica.spring.boot.starter.temporal;
 
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
 import ai.applica.spring.boot.starter.temporal.processors.ActivityStubIntercepter;
@@ -37,6 +38,7 @@ import net.bytebuddy.dynamic.DynamicType.Loaded;
 import net.bytebuddy.dynamic.DynamicType.Unloaded;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
@@ -50,6 +52,10 @@ public class WorkflowFactory {
 
   private final TemporalProperties temporalProperties;
   private final WorkflowClient workflowClient;
+
+  @Autowired(required = false)
+  private TemporalOptionsConfiguration temporalOptionsConfiguration;
+
   /**
    * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
    * taken from properties based on annotation of implementation class.
@@ -109,12 +115,17 @@ public class WorkflowFactory {
    */
   public Builder defaultOptionsBuilder(String workflowName) {
     WorkflowOption option = temporalProperties.getWorkflows().get(workflowName);
-    return WorkflowOptions.newBuilder()
-        .setTaskQueue(option.getTaskQueue())
-        .setWorkflowExecutionTimeout(
-            Duration.of(
-                option.getExecutionTimeout(),
-                ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
+    Builder builder =
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(option.getTaskQueue())
+            .setWorkflowExecutionTimeout(
+                Duration.of(
+                    option.getExecutionTimeout(),
+                    ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
+    if (temporalOptionsConfiguration != null) {
+      builder = temporalOptionsConfiguration.modifyDefalutStubOptions(builder);
+    }
+    return builder;
   }
   /**
    * Prepares option builder based on workflow class annotation and spring properties. Test version
