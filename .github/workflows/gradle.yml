@@ -1,14 +1,11 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Java CI with Gradle
-
+name: Publish package to GitHub Packages
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+  release:
+    types: [created]
+    
 jobs:
   build:
 
@@ -22,24 +19,7 @@ jobs:
         java-version: 1.8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build jar
-    - name: Nexus Repository Publisher for GitHub Actions
-      uses: sonatype-nexus-community/nexus-repo-github-action@1.0.0
-      with:
-        # Nexus Repository Server URL
-        serverUrl: https://oss.sonatype.org/content/repositories/snapshots
-        # Username to connect to Nexus Repo to publish components
-        username: jan.topinski@applica.ai
-        # Password to connect to Nexus Repo to publish components
-        password: ${{ secrets.password }}
-        # Component format e.g. maven2
-        format: maven2
-        # Name of target repository on Nexus Repo e.g. maven-releases
-        repository: maven-snapshots
-        # Component coordinates in key=value format. e.g. groupId=com.example artifactId=app version=1.0.0
-        coordinates: groupId=com.github.applicaai artifactId=spring-boot-starter-temporal version=0.0.1-SNAPSHOT
-        # Component assets in key=value format. e.g. extension=jar
-        assets: extension=jar
-        # File to publish
-        filename: ./build/libs/spring-boot-starter-temporal-0.0.1-SNAPSHOT.jar
+    - name: Publish package
+      run: gradle -Pversion=${{ github.event.release.tag_name }} build publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
