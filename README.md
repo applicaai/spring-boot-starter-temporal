@@ -159,3 +159,4 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
 ### Writing tests
 
 Pleas look into test directory `samples` folder in the sources.
+
