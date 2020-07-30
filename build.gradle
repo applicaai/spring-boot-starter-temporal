@@ -36,7 +36,7 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
-group = 'ai.applica'
+group = 'com.github.applicaai'
 version = '0.0.1-SNAPSHOT'
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -44,6 +44,16 @@ java {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+                url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+                credentials {
+                    username = project.findProperty("ossrhUser")
+                    password = project.findProperty("ossrhPassword")
+                }
+         }
+    }
     publications {
         maven(MavenPublication) {
             from(components.java)

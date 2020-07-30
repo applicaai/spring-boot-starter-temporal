@@ -5,11 +5,18 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 ## Configuration
 
 ### Gradle
-TODO
+```gradle
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.0.1-SNAPSHOT'
+```
 
 ### Maven
-TODO
-
+```maven
+<dependency>
+    <groupId>com.github.applicaai</groupId>
+    <artifactId>spring-boot-starter-temporal</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
 ## Usage
 
 Instead of reading this README you can see examples in test directory `samples` folder.
