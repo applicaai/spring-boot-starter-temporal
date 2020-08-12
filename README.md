@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.0.1-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.1.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.0.1-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
