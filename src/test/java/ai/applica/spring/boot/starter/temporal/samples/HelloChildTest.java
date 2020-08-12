@@ -26,6 +26,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChildImpl;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingWorkflow;
@@ -47,6 +48,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 /** Unit test for {@link HelloChild}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@TemporalTest
 public class HelloChildTest {
 
   /** Prints workflow histories under test in case of a test failure. */

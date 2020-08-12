@@ -26,6 +26,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflowImpl;
@@ -44,7 +45,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivityRetry}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
-@SpringBootTest()
+@SpringBootTest
+@TemporalTest
 public class HelloActivityRetryTest {
 
   /** Prints a history of the workflow under test in case of a test failure. */

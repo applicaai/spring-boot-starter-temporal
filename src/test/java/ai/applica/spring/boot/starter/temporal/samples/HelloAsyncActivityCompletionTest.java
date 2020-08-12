@@ -24,6 +24,7 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.Assert.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingActivitiesImpl;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingWorkflowImpl;
@@ -47,7 +48,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloAsyncActivityCompletion}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
-@SpringBootTest()
+@SpringBootTest
+@TemporalTest
 public class HelloAsyncActivityCompletionTest {
 
   @Rule public Timeout globalTimeout = Timeout.seconds(2);

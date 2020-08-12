@@ -18,7 +18,6 @@
 package ai.applica.spring.boot.starter.temporal.config;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.processors.WorkflowAnnotationBeanPostProcessor;
 import io.grpc.ManagedChannelBuilder;
 import io.temporal.client.ActivityCompletionClient;
@@ -29,14 +28,12 @@ import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@ConditionalOnClass({EnableTemporal.class})
 @EnableConfigurationProperties(TemporalProperties.class)
 @Import(WorkflowAnnotationBeanPostProcessor.class)
 @RequiredArgsConstructor

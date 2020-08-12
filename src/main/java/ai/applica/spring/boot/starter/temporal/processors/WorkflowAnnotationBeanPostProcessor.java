@@ -45,6 +45,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -52,6 +53,7 @@ import org.springframework.util.ReflectionUtils;
 
 @Slf4j
 @Configuration
+@Profile("!temporal_test")
 @RequiredArgsConstructor
 public class WorkflowAnnotationBeanPostProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
@@ -72,6 +74,7 @@ public class WorkflowAnnotationBeanPostProcessor
   @Override
   public Object postProcessAfterInitialization(final Object bean, final String beanName)
       throws BeansException {
+
     if (classes.contains(bean.getClass().getName())) {
       return bean;
     }

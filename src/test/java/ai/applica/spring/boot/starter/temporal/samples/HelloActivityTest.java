@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflowImpl;
@@ -42,9 +43,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
-// FIXME disable auto worker creation
-// @EnableAutoConfiguration(exclude = {WorkflowAnnotationBeanPostProcessor.class})
-@SpringBootTest()
+@SpringBootTest
+@TemporalTest
 public class HelloActivityTest {
 
   private TestWorkflowEnvironment testEnv;

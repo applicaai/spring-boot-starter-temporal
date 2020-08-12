@@ -24,6 +24,7 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.Assert.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflowImpl;
 import io.temporal.client.WorkflowClient;
@@ -42,7 +43,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloQuery}. Doesn't use an external Temporal service. */
 @RunWith(SpringRunner.class)
-@SpringBootTest()
+@SpringBootTest
+@TemporalTest
 public class HelloQueryTest {
 
   /** Prints a history of the workflow under test in case of a test failure. */
