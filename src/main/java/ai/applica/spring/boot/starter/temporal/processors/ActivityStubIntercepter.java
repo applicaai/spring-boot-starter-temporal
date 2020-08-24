@@ -19,6 +19,7 @@ package ai.applica.spring.boot.starter.temporal.processors;
 
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifier;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.activity.ActivityOptions.Builder;
 import io.temporal.workflow.Workflow;
@@ -29,6 +30,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;
@@ -38,11 +40,16 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ActivityStubIntercepter {
   private Class<?> targetClass;
 
-  public ActivityStubIntercepter(Class<?> targetClass) {
+  private TemporalOptionsConfiguration temporalOptionsConfiguration;
+
+  public ActivityStubIntercepter(
+      Class<?> targetClass, TemporalOptionsConfiguration temporalOptionsConfiguration) {
     this.targetClass = targetClass;
+    this.temporalOptionsConfiguration = temporalOptionsConfiguration;
   }
 
   @RuntimeType
@@ -109,6 +116,9 @@ public class ActivityStubIntercepter {
     } else {
       log.debug(
           "Not options modifier method found for " + field.getName() + " on object " + targetClass);
+    }
+    if (temporalOptionsConfiguration != null) {
+      options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
     }
     return options.build();
   }

@@ -18,6 +18,7 @@
 package ai.applica.spring.boot.starter.temporal;
 
 import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
+import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions.Builder;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +33,11 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
   @Override
   public io.temporal.client.WorkflowOptions.Builder modifyDefalutStubOptions(
       io.temporal.client.WorkflowOptions.Builder newBuilder) {
+    return newBuilder;
+  }
+
+  @Override
+  public ActivityOptions.Builder modifyDefaultActivityOptions(ActivityOptions.Builder newBuilder) {
     return newBuilder;
   }
 }

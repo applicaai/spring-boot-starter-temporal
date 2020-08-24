@@ -17,6 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal.config;
 
+import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 
@@ -36,4 +37,11 @@ public interface TemporalOptionsConfiguration {
    * @return
    */
   WorkflowOptions.Builder modifyDefalutStubOptions(WorkflowOptions.Builder newBuilder);
+  /**
+   * Modify options or just pass them throu.
+   *
+   * @param newBuilder
+   * @return
+   */
+  ActivityOptions.Builder modifyDefaultActivityOptions(ActivityOptions.Builder newBuilder);
 }

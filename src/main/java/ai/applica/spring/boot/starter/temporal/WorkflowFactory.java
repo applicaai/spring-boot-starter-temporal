@@ -224,7 +224,7 @@ public class WorkflowFactory {
             .subclass(targetClass)
             .implement(targetClass.getInterfaces()[0])
             .method(ElementMatchers.named(method.getName()))
-            .intercept(MethodDelegation.to(new ActivityStubIntercepter(targetClass)))
+            .intercept(MethodDelegation.to(new ActivityStubIntercepter(targetClass, temporalOptionsConfiguration)))
             .make();
     Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
     return beanL.getLoaded();
