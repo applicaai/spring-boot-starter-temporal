@@ -123,7 +123,7 @@ public class WorkflowFactory {
                     option.getExecutionTimeout(),
                     ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
     if (temporalOptionsConfiguration != null) {
-      builder = temporalOptionsConfiguration.modifyDefalutStubOptions(builder);
+      builder = temporalOptionsConfiguration.modifyDefaultStubOptions(builder);
     }
     return builder;
   }

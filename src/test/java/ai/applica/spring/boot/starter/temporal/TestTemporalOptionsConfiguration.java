@@ -31,7 +31,7 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
   }
 
   @Override
-  public io.temporal.client.WorkflowOptions.Builder modifyDefalutStubOptions(
+  public io.temporal.client.WorkflowOptions.Builder modifyDefaultStubOptions(
       io.temporal.client.WorkflowOptions.Builder newBuilder) {
     return newBuilder;
   }

@@ -36,7 +36,7 @@ public interface TemporalOptionsConfiguration {
    * @param newBuilder
    * @return
    */
-  WorkflowOptions.Builder modifyDefalutStubOptions(WorkflowOptions.Builder newBuilder);
+  WorkflowOptions.Builder modifyDefaultStubOptions(WorkflowOptions.Builder newBuilder);
   /**
    * Modify options or just pass them throu.
    *
