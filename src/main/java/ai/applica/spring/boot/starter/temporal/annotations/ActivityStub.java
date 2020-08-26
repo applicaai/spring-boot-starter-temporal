@@ -29,7 +29,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
+
   long duration();
 
   String durationUnits() default "SECONDS";
+
+  RetryActivityOptions retryOptions() default @RetryActivityOptions;
 }

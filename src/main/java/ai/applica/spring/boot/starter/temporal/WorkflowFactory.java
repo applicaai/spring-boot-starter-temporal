@@ -21,7 +21,7 @@ import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
-import ai.applica.spring.boot.starter.temporal.processors.ActivityStubIntercepter;
+import ai.applica.spring.boot.starter.temporal.processors.ActivityStubInterceptor;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowOptions.Builder;
@@ -224,7 +224,9 @@ public class WorkflowFactory {
             .subclass(targetClass)
             .implement(targetClass.getInterfaces()[0])
             .method(ElementMatchers.named(method.getName()))
-            .intercept(MethodDelegation.to(new ActivityStubIntercepter(targetClass, temporalOptionsConfiguration)))
+            .intercept(
+                MethodDelegation.to(
+                    new ActivityStubInterceptor(targetClass, temporalOptionsConfiguration)))
             .make();
     Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
     return beanL.getLoaded();
