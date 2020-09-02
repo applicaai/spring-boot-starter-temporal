@@ -18,7 +18,9 @@
 package ai.applica.spring.boot.starter.temporal;
 
 import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
+import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions.Builder;
+import io.temporal.common.RetryOptions;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -30,8 +32,17 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
   }
 
   @Override
-  public io.temporal.client.WorkflowOptions.Builder modifyDefalutStubOptions(
+  public io.temporal.client.WorkflowOptions.Builder modifyDefaultStubOptions(
       io.temporal.client.WorkflowOptions.Builder newBuilder) {
     return newBuilder;
+  }
+
+  @Override
+  public ActivityOptions.Builder modifyDefaultActivityOptions(ActivityOptions.Builder newBuilder) {
+    return newBuilder.setRetryOptions(
+        RetryOptions.newBuilder()
+            .setDoNotRetry(
+                "ai.applica.spring.boot.starter.temporal.samples.apps.CustomActivityConfigurationException")
+            .build());
   }
 }

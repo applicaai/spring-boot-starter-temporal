@@ -21,18 +21,30 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.temporal.ChronoUnit;
 
-/**
- * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
- * duration unit being ChronoUnit string equivalent.
- */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-public @interface ActivityStub {
+public @interface RetryActivityOptions {
+  long initialInterval() default DEFAULT_INITIAL_INTERVAL;
 
-  long duration();
+  ChronoUnit initialIntervalUnits() default ChronoUnit.SECONDS;
 
-  String durationUnits() default "SECONDS";
+  double backoffCoefficient() default DEFAULT_BACKOFF_COEFFICIENT;
 
-  RetryActivityOptions retryOptions() default @RetryActivityOptions;
+  int maximumAttempts() default DEFAULT_MAXIMUM_ATTEMPTS;
+
+  long maximumInterval() default DEFAULT_MAXIMUM_INTERVAL;
+
+  ChronoUnit maximumIntervalUnits() default ChronoUnit.SECONDS;
+
+  String[] doNotRetry() default {};
+
+  long DEFAULT_INITIAL_INTERVAL = -1;
+
+  double DEFAULT_BACKOFF_COEFFICIENT = -1.0;
+
+  int DEFAULT_MAXIMUM_ATTEMPTS = -1;
+
+  long DEFAULT_MAXIMUM_INTERVAL = -1;
 }

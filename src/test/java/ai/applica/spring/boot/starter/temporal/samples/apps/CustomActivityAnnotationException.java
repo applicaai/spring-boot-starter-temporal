@@ -1,7 +1,11 @@
 /*
  *  Copyright (c) 2020 Applica.ai All Rights Reserved
  *
+ *  Copyright (c) 2020 Temporal Technologies, Inc. All Rights Reserved
+ *
  *  Copyright 2012-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ *  Modifications copyright (C) 2017 Uber Technologies, Inc.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"). You may not
  *  use this file except in compliance with the License. A copy of the License is
@@ -15,24 +19,11 @@
  *  permissions and limitations under the License.
  */
 
-package ai.applica.spring.boot.starter.temporal.annotations;
+package ai.applica.spring.boot.starter.temporal.samples.apps;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class CustomActivityAnnotationException extends RuntimeException {
 
-/**
- * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
- * duration unit being ChronoUnit string equivalent.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface ActivityStub {
-
-  long duration();
-
-  String durationUnits() default "SECONDS";
-
-  RetryActivityOptions retryOptions() default @RetryActivityOptions;
+  public CustomActivityAnnotationException(String s) {
+    super(s);
+  }
 }
