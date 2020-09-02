@@ -35,6 +35,8 @@ spring.temporal:
       taskQueue: HelloAsyncActivityCompletion
     HelloActivityRetry:
       taskQueue: HelloActivityRetry
+    HelloActivityAnnotation:
+      taskQueue: HelloActivityAnnotation
     HelloChild:
       taskQueue: HelloChild
     HelloQuery:
@@ -43,4 +45,3 @@ spring.temporal:
       taskQueue: HelloSignal
       executiontimeout: 10
       executiontimeoutUnit: DAYS
-    

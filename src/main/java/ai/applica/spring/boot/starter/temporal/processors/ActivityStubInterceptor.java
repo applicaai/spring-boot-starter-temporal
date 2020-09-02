@@ -171,15 +171,16 @@ public class ActivityStubInterceptor {
     }
     // doNotRetry
     if (retryActivityOptions.doNotRetry().length > 0) {
+      String[] defaultDoNotRetry =
+          defaultRetryOptions != null && defaultRetryOptions.getDoNotRetry() != null
+              ? defaultRetryOptions.getDoNotRetry()
+              : new String[] {};
       log.debug(
           "Merging retry option 'doNotRetry' original value {} with value {}",
-          Arrays.toString(defaultRetryOptions.getDoNotRetry()),
+          Arrays.toString(defaultDoNotRetry),
           Arrays.toString(retryActivityOptions.doNotRetry()));
       mergedRetryOptions.setDoNotRetry(
-          ObjectArrays.concat(
-              retryActivityOptions.doNotRetry(),
-              defaultRetryOptions.getDoNotRetry(),
-              String.class));
+          ObjectArrays.concat(retryActivityOptions.doNotRetry(), defaultDoNotRetry, String.class));
     }
     return mergedRetryOptions.build();
   }
