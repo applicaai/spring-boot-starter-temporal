@@ -194,6 +194,9 @@ public class WorkflowFactory {
       TemporalWorkflow workflowAnotation =
           AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
       WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
+      if(option == null){
+        throw new RuntimeException("No properties specitied for " + workflowAnotation.value());
+      }
       taskQueue = option.getTaskQueue();
       types[i++] = makeWorkflowClass(targetClass);
     }
