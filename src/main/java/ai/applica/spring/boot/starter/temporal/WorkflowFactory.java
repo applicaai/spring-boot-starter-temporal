@@ -194,7 +194,7 @@ public class WorkflowFactory {
       TemporalWorkflow workflowAnotation =
           AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
       WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
-      if(option == null){
+      if (option == null) {
         throw new RuntimeException("No properties specitied for " + workflowAnotation.value());
       }
       taskQueue = option.getTaskQueue();
@@ -221,7 +221,6 @@ public class WorkflowFactory {
                 method -> AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
 
     Method method = (Method) methods.toArray()[0];
-
     Unloaded<?> beanU =
         new ByteBuddy()
             .subclass(targetClass)

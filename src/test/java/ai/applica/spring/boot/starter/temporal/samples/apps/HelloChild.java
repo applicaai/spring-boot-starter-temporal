@@ -69,7 +69,7 @@ public class HelloChild {
       // Use child.composeGreeting("Hello", name) to call synchronously.
       Promise<String> greeting = Async.function(child::composeGreeting, "Hello", name);
       // Do something else here.
-      return greeting.get(); // blocks waiting for the child to complete.
+      return greeting.get(); // blocks waiting for the child to complete
     }
   }
 
