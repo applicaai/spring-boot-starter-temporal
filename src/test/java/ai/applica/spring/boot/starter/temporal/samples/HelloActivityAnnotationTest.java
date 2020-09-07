@@ -37,8 +37,8 @@ import ai.applica.spring.boot.starter.temporal.samples.apps.CustomActivityConfig
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingWorkflowImpl;
+import io.temporal.api.enums.v1.RetryState;
 import io.temporal.client.WorkflowFailedException;
-import io.temporal.enums.v1.RetryStatus;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
@@ -111,10 +111,10 @@ public class HelloActivityAnnotationTest {
         assertThrows(WorkflowFailedException.class, () -> workflow.getGreeting("World"));
 
     // then
-    assertEquals(RetryStatus.RETRY_STATUS_UNSPECIFIED, exception.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
     ActivityFailure cause = (ActivityFailure) exception.getCause();
     // temporal throws the failure cause from the last HistoryEvent in  execution
-    assertEquals(RetryStatus.RETRY_STATUS_TIMEOUT, cause.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
   }
 
   @Test(timeout = 10000)
@@ -137,10 +137,10 @@ public class HelloActivityAnnotationTest {
         assertThrows(WorkflowFailedException.class, () -> workflow.getGreeting("World"));
 
     // then
-    assertEquals(RetryStatus.RETRY_STATUS_UNSPECIFIED, exception.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
 
     ActivityFailure cause = (ActivityFailure) exception.getCause();
-    assertEquals(RetryStatus.RETRY_STATUS_TIMEOUT, cause.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
     // temporal throws the failure cause from the last HistoryEvent in execution
 
     // and
@@ -148,7 +148,7 @@ public class HelloActivityAnnotationTest {
 
     // and check if diagnostics contains real cause of workflow failure (very tricky method, but in
     // this moment i can't see any alternatives)
-    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATUS_MAXIMUM_ATTEMPTS_REACHED"));
+    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATE_MAXIMUM_ATTEMPTS_REACHED"));
   }
 
   @Ignore(
@@ -171,17 +171,17 @@ public class HelloActivityAnnotationTest {
         assertThrows(WorkflowFailedException.class, () -> workflow.getGreeting("World"));
 
     // then
-    assertEquals(RetryStatus.RETRY_STATUS_UNSPECIFIED, exception.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
 
     ActivityFailure cause = (ActivityFailure) exception.getCause();
-    assertEquals(RetryStatus.RETRY_STATUS_TIMEOUT, cause.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
 
     // and
     verify(activities, times(3)).composeGreeting(anyString(), anyString());
 
     // and check if diagnostics contains real cause of workflow failure (very tricky method, but in
     // this moment i can't see any alternatives)
-    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATUS_NON_RETRYABLE_FAILURE"));
+    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATE_NON_RETRYABLE_FAILURE"));
   }
 
   @Ignore(
@@ -204,16 +204,16 @@ public class HelloActivityAnnotationTest {
         assertThrows(WorkflowFailedException.class, () -> workflow.getGreeting("World"));
 
     // then
-    assertEquals(RetryStatus.RETRY_STATUS_UNSPECIFIED, exception.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
 
     ActivityFailure cause = (ActivityFailure) exception.getCause();
-    assertEquals(RetryStatus.RETRY_STATUS_TIMEOUT, cause.getRetryStatus());
+    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
 
     // and
     verify(activities, times(3)).composeGreeting(anyString(), anyString());
 
     // and check if diagnostics contains real cause of workflow failure (very tricky method, but in
     // this moment i can't see any alternatives)
-    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATUS_NON_RETRYABLE_FAILURE"));
+    assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATE_NON_RETRYABLE_FAILURE"));
   }
 }

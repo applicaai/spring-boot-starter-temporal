@@ -221,11 +221,10 @@ public class WorkflowFactory {
                 method -> AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
 
     Method method = (Method) methods.toArray()[0];
-
     Unloaded<?> beanU =
         new ByteBuddy()
             .subclass(targetClass)
-            .implement(targetClass.getInterfaces()[0])
+            .implement(targetClass.getInterfaces())
             .method(ElementMatchers.named(method.getName()))
             .intercept(
                 MethodDelegation.to(
