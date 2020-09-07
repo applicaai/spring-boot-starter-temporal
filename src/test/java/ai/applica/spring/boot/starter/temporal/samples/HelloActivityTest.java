@@ -24,6 +24,7 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
@@ -81,7 +82,8 @@ public class HelloActivityTest {
 
   @Test
   public void testMockedActivity() {
-    GreetingActivities activities = mock(GreetingActivities.class);
+    GreetingActivities activities =
+        mock(GreetingActivities.class, withSettings().withoutAnnotations());
     when(activities.composeGreeting("Hello", "World")).thenReturn("Hello World!");
     worker.registerActivitiesImplementations(activities);
     testEnv.start();
