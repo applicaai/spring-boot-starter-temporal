@@ -114,7 +114,7 @@ public class HelloActivityAnnotationTest {
     assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
     ActivityFailure cause = (ActivityFailure) exception.getCause();
     // temporal throws the failure cause from the last HistoryEvent in  execution
-    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
+    assertEquals(RetryState.RETRY_STATE_MAXIMUM_ATTEMPTS_REACHED, cause.getRetryState());
   }
 
   @Test(timeout = 10000)
@@ -140,7 +140,7 @@ public class HelloActivityAnnotationTest {
     assertEquals(RetryState.RETRY_STATE_UNSPECIFIED, exception.getRetryState());
 
     ActivityFailure cause = (ActivityFailure) exception.getCause();
-    assertEquals(RetryState.RETRY_STATE_TIMEOUT, cause.getRetryState());
+    assertEquals(RetryState.RETRY_STATE_MAXIMUM_ATTEMPTS_REACHED, cause.getRetryState());
     // temporal throws the failure cause from the last HistoryEvent in execution
 
     // and

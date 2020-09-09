@@ -36,7 +36,6 @@ import io.temporal.worker.Worker;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -97,8 +96,6 @@ public class HelloChildTest {
   }
 
   @Test
-  @Ignore(
-      "Test is ignored also in parent temporal repository after 0.27.0 release. Please monitor when Temporal.io crew will fix it")
   public void testMockedChild() {
     Worker worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
     // As new mock is created on each decision the only last one is useful to verify calls.
