@@ -93,6 +93,13 @@ public class HelloChildTest {
     // Execute a workflow waiting for it to complete.
     String greeting = workflow.getGreeting("World");
     assertEquals("Hello World!", greeting);
+
+    GreetingWorkflow secondWorkflow =
+        fact.makeStub(
+            GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
+
+    String secondGreeting = secondWorkflow.getGreeting("all");
+    assertEquals("Hello all!", secondGreeting);
   }
 
   @Test

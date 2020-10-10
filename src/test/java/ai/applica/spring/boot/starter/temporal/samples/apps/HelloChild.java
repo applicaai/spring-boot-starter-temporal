@@ -22,10 +22,10 @@
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.ChildWorkflowStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.workflow.Async;
 import io.temporal.workflow.Promise;
-import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,11 +59,13 @@ public class HelloChild {
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
+    @ChildWorkflowStub private GreetingChild child;
 
     @Override
     public String getGreeting(String name) {
       // Workflows are stateful. So a new stub must be created for each new child.
-      GreetingChild child = Workflow.newChildWorkflowStub(GreetingChild.class);
+      // Do not reuse the same stub!
+      // GreetingChild otherChild = Workflow.newChildWorkflowStub(GreetingChild.class);
 
       // This is a non blocking call that returns immediately.
       // Use child.composeGreeting("Hello", name) to call synchronously.
@@ -85,9 +87,7 @@ public class HelloChild {
       return greeting + " " + name + "!";
     }
   }
-  // FIXME
-  // @EnableTemporal
-  // @SpringBootApplication
+
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;

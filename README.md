@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.1.3-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.2.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -113,6 +113,15 @@ public void callWorkflowMethod() {
 }
 
 ```
+### Adding child workflow
+In workflow implementation class add `@ChildWorkflowStub` annotated field.
+```java
+@ChildWorkflowStub
+public MyChildWorkflow myChildWorkflow;
+```
+You can use `myChildWorkflow` as a stub or instantiate as many `MyChildWorkflow`s stubs as you like
+provided at least one is annotated with `@ChildWorkflowStub`. That is for the worker to be properly 
+created.
 
 ## Advanced stuff
 

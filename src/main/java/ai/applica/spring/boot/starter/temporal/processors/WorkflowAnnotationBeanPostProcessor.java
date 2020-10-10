@@ -19,6 +19,7 @@ package ai.applica.spring.boot.starter.temporal.processors;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.annotations.ChildWorkflowStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
@@ -27,6 +28,7 @@ import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.workflow.WorkflowMethod;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -109,32 +111,48 @@ public class WorkflowAnnotationBeanPostProcessor
       }
       Worker worker = workerFactory.newWorker(options.getTaskQueue(), getWorkerOptions(options));
 
-      // We add activities instantions to worker
-      List<Object> activities = new ArrayList<Object>();
+      WorkflowFactory workflowFactory = new WorkflowFactory(temporalProperties, workflowClient);
+
       try {
-        for (Field field : targetClass.getDeclaredFields()) {
-          ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
-          if (annotations.length > 0) {
-            DependencyDescriptor desc = new DependencyDescriptor(field, true);
-            Object dep =
-                ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
-            activities.add(dep);
-          }
-        }
-        if (activities.size() > 0) {
+        List<Object> activities = getBeansByAnnotation(beanName, ActivityStub.class, targetClass);
+        List<Object> children =
+            getBeansByAnnotation(beanName, ChildWorkflowStub.class, targetClass);
+
+        if (!activities.isEmpty()) {
           worker.registerActivitiesImplementations(activities.toArray());
+        }
+        if (!children.isEmpty()) {
+          children.stream()
+              .forEach(
+                  child -> {
+                    worker.registerWorkflowImplementationTypes(
+                        workflowFactory.makeWorkflowClass(child.getClass()));
+                  });
         }
       } catch (IllegalArgumentException | SecurityException e) {
         new RuntimeException(e);
       }
 
       // we create the worker
-      worker.registerWorkflowImplementationTypes(
-          new WorkflowFactory(temporalProperties, workflowClient).makeWorkflowClass(targetClass));
+      worker.registerWorkflowImplementationTypes(workflowFactory.makeWorkflowClass(targetClass));
 
       classes.add(bean.getClass().getName());
     }
     return bean;
+  }
+
+  private List<Object> getBeansByAnnotation(
+      final String beanName, Class annotationClass, Class<?> targetClass) {
+    List<Object> activities = new ArrayList<Object>();
+    for (Field field : targetClass.getDeclaredFields()) {
+      Annotation[] annotations = field.getAnnotationsByType(annotationClass);
+      if (annotations.length > 0) {
+        DependencyDescriptor desc = new DependencyDescriptor(field, true);
+        Object dep = ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
+        activities.add(dep);
+      }
+    }
+    return activities;
   }
 
   private WorkerOptions getWorkerOptions(WorkflowOption option) {
