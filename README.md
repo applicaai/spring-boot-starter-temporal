@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.2.0-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.3.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.2.0-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
@@ -114,14 +114,9 @@ public void callWorkflowMethod() {
 
 ```
 ### Adding child workflow
-In workflow implementation class add `@ChildWorkflowStub` annotated field.
-```java
-@ChildWorkflowStub
-public MyChildWorkflow myChildWorkflow;
-```
-You can use `myChildWorkflow` as a stub or instantiate as many `MyChildWorkflow`s stubs as you like
-provided at least one is annotated with `@ChildWorkflowStub`. That is for the worker to be properly 
-created.
+
+You can use child workflows only with dedicated queue `ChildWorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build();`.
+Spring Boot starter for Temporal.io do not support multi-workflow queues as for now so no workers without task queue can be called.
 
 ## Advanced stuff
 

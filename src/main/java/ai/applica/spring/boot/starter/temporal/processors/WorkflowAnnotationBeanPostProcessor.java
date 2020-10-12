@@ -19,7 +19,6 @@ package ai.applica.spring.boot.starter.temporal.processors;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
-import ai.applica.spring.boot.starter.temporal.annotations.ChildWorkflowStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
@@ -115,19 +114,9 @@ public class WorkflowAnnotationBeanPostProcessor
 
       try {
         List<Object> activities = getBeansByAnnotation(beanName, ActivityStub.class, targetClass);
-        List<Object> children =
-            getBeansByAnnotation(beanName, ChildWorkflowStub.class, targetClass);
 
         if (!activities.isEmpty()) {
           worker.registerActivitiesImplementations(activities.toArray());
-        }
-        if (!children.isEmpty()) {
-          children.stream()
-              .forEach(
-                  child -> {
-                    worker.registerWorkflowImplementationTypes(
-                        workflowFactory.makeWorkflowClass(child.getClass()));
-                  });
         }
       } catch (IllegalArgumentException | SecurityException e) {
         new RuntimeException(e);

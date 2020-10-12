@@ -19,7 +19,6 @@ package ai.applica.spring.boot.starter.temporal.processors;
 
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifier;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
-import ai.applica.spring.boot.starter.temporal.annotations.ChildWorkflowStub;
 import ai.applica.spring.boot.starter.temporal.annotations.RetryActivityOptions;
 import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
 import com.google.common.collect.ObjectArrays;
@@ -61,35 +60,8 @@ public class ActivityStubInterceptor {
   public Object process(@This Object obj, @SuperCall Callable<Object> call) throws Exception {
     for (Field field : targetClass.getDeclaredFields()) {
       createActivityStubs(obj, field);
-      createChildWorkflows(obj, field);
     }
     return call.call();
-  }
-
-  private void createChildWorkflows(Object obj, Field field) {
-    ChildWorkflowStub[] childrenAnnotations = field.getAnnotationsByType(ChildWorkflowStub.class);
-
-    if (childrenAnnotations.length > 0) {
-      ReflectionUtils.makeAccessible(field);
-      try {
-        if (field.get(obj) == null) {
-          ChildWorkflowStub activityStubAnnotation = field.getAnnotation(ChildWorkflowStub.class);
-          Object was = Workflow.newChildWorkflowStub(field.getType());
-          field.set(obj, was);
-          log.debug(
-              "ChildWorkflowStub created for workflow {} on workflow {}",
-              field.getType(),
-              obj.getClass().getSimpleName());
-        } else {
-          log.debug(
-              "ChildWorkflowStub not created for workflow {} on workflow {} field not null",
-              field.getType(),
-              obj.getClass().getSimpleName());
-        }
-      } catch (IllegalArgumentException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   private void createActivityStubs(Object obj, Field field) {
