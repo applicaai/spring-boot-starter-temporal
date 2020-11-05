@@ -67,8 +67,7 @@ public class HelloActivity {
      * invocations. Because activities are reentrant, only a single stub can be used for multiple
      * activity invocations.
      */
-    @ActivityStub(duration = 10)
-    private GreetingActivities activities;
+    @ActivityStub private GreetingActivities activities;
 
     @Override
     public String getGreeting(String name) {

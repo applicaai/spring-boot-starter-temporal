@@ -19,6 +19,10 @@ spring.temporal:
   # host: localhost
   # port: 7233
   # useSsl: false
+  activityStubs:
+    GreetingActivities:
+      scheduleToCloseTimeout: 20
+      scheduleToCloseTimeoutUnit: SECONDS
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS

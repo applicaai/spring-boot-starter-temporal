@@ -23,6 +23,8 @@ package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 public class CustomActivityAnnotationException extends RuntimeException {
 
+  private static final long serialVersionUID = 1L;
+
   public CustomActivityAnnotationException(String s) {
     super(s);
   }

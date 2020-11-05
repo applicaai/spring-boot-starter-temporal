@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.4.0-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.4.0-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.5.0-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
@@ -86,7 +86,18 @@ Activity stub instantiation you annotate it with `@ActivityStub`:
 public SomeActivity someActivity;
 ```
 
-There is a duration parameter required that's setting `ScheduleToCloseTimeout` on stub.
+There is a duration parameter that's setting `ScheduleToCloseTimeout` on stub.
+Or you can use:
+```yaml
+  activityStubDefaults:
+    scheduleToCloseTimeout: 10
+    scheduleToCloseTimeoutUnit: SECONDS
+  activityStubs:
+    #where this is part of the name of activiti stub: "WorkflowClass.ActivityInterface"
+    GreetingActivities:
+      scheduleToCloseTimeout: 20
+      scheduleToCloseTimeoutUnit: SECONDS
+```
 
 ### Defining activities
 The only thing you need is for the activity to be a Spring Boot `@Service`.

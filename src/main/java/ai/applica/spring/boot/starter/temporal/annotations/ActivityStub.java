@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
 
-  long duration();
+  long duration() default -1;
 
   String durationUnits() default "SECONDS";
 

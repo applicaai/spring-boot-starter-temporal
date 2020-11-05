@@ -37,6 +37,10 @@ public class TemporalProperties {
 
   private Map<String, WorkflowOption> workflows;
 
+  private ActivityStubOptions activityStubDefaults;
+
+  private Map<String, ActivityStubOptions> activityStubs;
+
   private boolean addedDefaultsToWorkflows = false;
 
   @Data
@@ -52,6 +56,15 @@ public class TemporalProperties {
     private Integer activityPoolSize;
 
     private Integer workflowPoolSize;
+  }
+
+  @Data
+  @NoArgsConstructor
+  public static class ActivityStubOptions {
+
+    private Long scheduleToCloseTimeout;
+
+    private String scheduleToCloseTimeoutUnit;
   }
 
   public Map<String, WorkflowOption> getWorkflows() {

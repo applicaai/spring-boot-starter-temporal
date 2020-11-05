@@ -23,6 +23,8 @@ package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 public class CustomActivityConfigurationException extends RuntimeException {
 
+  private static final long serialVersionUID = 1L;
+
   public CustomActivityConfigurationException(String s) {
     super(s);
   }

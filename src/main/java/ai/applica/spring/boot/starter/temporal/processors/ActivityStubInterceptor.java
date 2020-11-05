@@ -21,6 +21,8 @@ import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifi
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.RetryActivityOptions;
 import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.ActivityStubOptions;
 import com.google.common.collect.ObjectArrays;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.activity.ActivityOptions.Builder;
@@ -32,6 +34,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import lombok.RequiredArgsConstructor;
@@ -49,11 +52,15 @@ public class ActivityStubInterceptor {
   private Class<?> targetClass;
 
   private TemporalOptionsConfiguration temporalOptionsConfiguration;
+  private TemporalProperties temporalProperties;
 
   public ActivityStubInterceptor(
-      Class<?> targetClass, TemporalOptionsConfiguration temporalOptionsConfiguration) {
+      Class<?> targetClass,
+      TemporalOptionsConfiguration temporalOptionsConfiguration,
+      TemporalProperties temporalProperties) {
     this.targetClass = targetClass;
     this.temporalOptionsConfiguration = temporalOptionsConfiguration;
+    this.temporalProperties = temporalProperties;
   }
 
   @RuntimeType
@@ -93,20 +100,47 @@ public class ActivityStubInterceptor {
 
   private ActivityOptions buildOptions(
       Object target, ActivityStub activityStubAnnotation, Field field) {
+
     // Build default options
     Builder options = ActivityOptions.newBuilder();
+
+    // from configuration
+    if (temporalProperties.getActivityStubDefaults() != null) {
+      ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
+      options.setScheduleToCloseTimeout(
+          Duration.of(
+              activityStubDefaults.getScheduleToCloseTimeout(),
+              ChronoUnit.valueOf(activityStubDefaults.getScheduleToCloseTimeoutUnit())));
+    }
+
+    // from default method
     if (temporalOptionsConfiguration != null) {
       options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
     }
-    options.setScheduleToCloseTimeout(
-        Duration.of(
-            activityStubAnnotation.duration(),
-            ChronoUnit.valueOf(activityStubAnnotation.durationUnits())));
+    if (activityStubAnnotation.duration() != -1) {
+      options.setScheduleToCloseTimeout(
+          Duration.of(
+              activityStubAnnotation.duration(),
+              ChronoUnit.valueOf(activityStubAnnotation.durationUnits())));
+    }
 
     if (nonDefaultRetryOptions(activityStubAnnotation.retryOptions())) {
       options.setRetryOptions(mergeRetryOptions(activityStubAnnotation.retryOptions(), options));
     }
-
+    // from configuration of particular activity stub
+    if (temporalProperties.getActivityStubs() != null) {
+      String stubName =
+          field.getDeclaringClass().getSimpleName() + "." + field.getType().getSimpleName();
+      for (Map.Entry<String, ActivityStubOptions> entry :
+          temporalProperties.getActivityStubs().entrySet()) {
+        if (stubName.contains(entry.getKey())) {
+          options.setScheduleToCloseTimeout(
+              Duration.of(
+                  entry.getValue().getScheduleToCloseTimeout(),
+                  ChronoUnit.valueOf(entry.getValue().getScheduleToCloseTimeoutUnit())));
+        }
+      }
+    }
     // chk for modifier
     Set<Method> methods =
         MethodIntrospector.selectMethods(

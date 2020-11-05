@@ -221,6 +221,7 @@ public class WorkflowFactory {
                 method -> AnnotationUtils.findAnnotation(method, WorkflowMethod.class) != null);
 
     Method method = (Method) methods.toArray()[0];
+
     Unloaded<?> beanU =
         new ByteBuddy()
             .subclass(targetClass)
@@ -228,7 +229,8 @@ public class WorkflowFactory {
             .method(ElementMatchers.named(method.getName()))
             .intercept(
                 MethodDelegation.to(
-                    new ActivityStubInterceptor(targetClass, temporalOptionsConfiguration)))
+                    new ActivityStubInterceptor(
+                        targetClass, temporalOptionsConfiguration, temporalProperties)))
             .make();
     Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
     return beanL.getLoaded();
