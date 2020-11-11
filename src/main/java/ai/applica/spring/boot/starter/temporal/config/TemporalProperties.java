@@ -33,6 +33,8 @@ public class TemporalProperties {
 
   private Boolean useSsl;
 
+  private boolean createWorkers = true;
+
   private WorkflowOption workflowDefaults;
 
   private Map<String, WorkflowOption> workflows;

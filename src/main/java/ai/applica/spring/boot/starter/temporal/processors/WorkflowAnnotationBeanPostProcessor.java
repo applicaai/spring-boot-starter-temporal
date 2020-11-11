@@ -76,7 +76,7 @@ public class WorkflowAnnotationBeanPostProcessor
   public Object postProcessAfterInitialization(final Object bean, final String beanName)
       throws BeansException {
 
-    if (classes.contains(bean.getClass().getName())) {
+    if (!temporalProperties.isCreateWorkers() || classes.contains(bean.getClass().getName())) {
       return bean;
     }
 
@@ -158,7 +158,9 @@ public class WorkflowAnnotationBeanPostProcessor
 
   @Override
   public void afterSingletonsInstantiated() {
-    workerFactory.start();
+    if (temporalProperties.isCreateWorkers()) {
+      workerFactory.start();
+    }
   }
 
   @Override

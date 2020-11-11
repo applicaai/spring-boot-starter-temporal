@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.0-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.1-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.0-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.1-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
@@ -40,6 +40,7 @@ spring.temporal:
   # host: localhost
   # port: 7233
   # useSsl: false
+  # createWorkers: true
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS
@@ -177,7 +178,16 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
   }
 }
 ```
+### Disable automatic worker creation
 
+Spring boot starter for Temporal will usually create workers for all implemented workflows.
+If for some reasons you do not wont it to happen. You can add to configuration:
+```yaml
+spring.temporal:
+  createWorkers: false
+```
+
+You can also disable creation of workflows for given test when testing using annotation `@TemporalTest`
 ### Writing tests
 
 Pleas look into test directory `samples` folder in the sources.

@@ -19,6 +19,7 @@ spring.temporal:
   # host: localhost
   # port: 7233
   # useSsl: false
+  # createWorkers: true
   activityStubs:
     GreetingActivities:
       scheduleToCloseTimeout: 20
