@@ -38,7 +38,6 @@ import net.bytebuddy.dynamic.DynamicType.Loaded;
 import net.bytebuddy.dynamic.DynamicType.Unloaded;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
@@ -52,9 +51,7 @@ public class WorkflowFactory {
 
   private final TemporalProperties temporalProperties;
   private final WorkflowClient workflowClient;
-
-  @Autowired(required = false)
-  private TemporalOptionsConfiguration temporalOptionsConfiguration;
+  private final TemporalOptionsConfiguration temporalOptionsConfiguration;
 
   /**
    * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
@@ -122,10 +119,7 @@ public class WorkflowFactory {
                 Duration.of(
                     option.getExecutionTimeout(),
                     ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
-    if (temporalOptionsConfiguration != null) {
-      builder = temporalOptionsConfiguration.modifyDefaultStubOptions(builder);
-    }
-    return builder;
+    return temporalOptionsConfiguration.modifyDefaultStubOptions(builder);
   }
   /**
    * Prepares option builder based on workflow class annotation and spring properties. Test version

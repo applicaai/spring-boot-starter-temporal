@@ -20,6 +20,7 @@ package ai.applica.spring.boot.starter.temporal.processors;
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfiguration;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowOption;
 import io.temporal.client.WorkflowClient;
@@ -60,6 +61,7 @@ public class WorkflowAnnotationBeanPostProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
 
   private final TemporalProperties temporalProperties;
+  private final TemporalOptionsConfiguration temporalOptionsConfiguration;
   private final WorkerFactory workerFactory;
   private final WorkflowClient workflowClient;
   private final Set<String> classes = new HashSet<>();
@@ -110,7 +112,8 @@ public class WorkflowAnnotationBeanPostProcessor
       }
       Worker worker = workerFactory.newWorker(options.getTaskQueue(), getWorkerOptions(options));
 
-      WorkflowFactory workflowFactory = new WorkflowFactory(temporalProperties, workflowClient);
+      WorkflowFactory workflowFactory =
+          new WorkflowFactory(temporalProperties, workflowClient, temporalOptionsConfiguration);
 
       try {
         List<Object> activities = getBeansByAnnotation(beanName, ActivityStub.class, targetClass);

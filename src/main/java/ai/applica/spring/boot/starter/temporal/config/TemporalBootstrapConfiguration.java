@@ -27,7 +27,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,18 +38,18 @@ import org.springframework.context.annotation.Import;
 @RequiredArgsConstructor
 public class TemporalBootstrapConfiguration {
 
-  @Autowired(required = false)
-  TemporalOptionsConfiguration temproalOptionsConfiguration;
+  private final TemporalOptionsConfiguration temporalOptionsConfiguration;
 
   @Bean
-  public ActivityCompletionClient defaultActivitiCompletitionClient(
+  public ActivityCompletionClient defaultActivityCompletionClient(
       TemporalProperties temporalProperties) {
     return defaultClient(temporalProperties).newActivityCompletionClient();
   }
 
   @Bean
-  public WorkflowFactory defaulWorkflowFactory(TemporalProperties temporalProperties) {
-    return new WorkflowFactory(temporalProperties, defaultClient(temporalProperties));
+  public WorkflowFactory defaultWorkflowFactory(TemporalProperties temporalProperties) {
+    return new WorkflowFactory(
+        temporalProperties, defaultClient(temporalProperties), temporalOptionsConfiguration);
   }
 
   @Bean
@@ -67,7 +66,7 @@ public class TemporalBootstrapConfiguration {
       ManagedChannelBuilder<?> channel =
           ManagedChannelBuilder.forAddress(
               temporalProperties.getHost(), temporalProperties.getPort());
-      if (!temporalProperties.getUseSsl()) {
+      if (temporalProperties.getUseSsl() == null || !temporalProperties.getUseSsl()) {
         channel.usePlaintext();
       }
       WorkflowServiceStubsOptions options =
@@ -80,12 +79,8 @@ public class TemporalBootstrapConfiguration {
       // Get the default connection for the local docker
       service = WorkflowServiceStubs.newInstance();
     }
-    if (temproalOptionsConfiguration != null) {
-      WorkflowClientOptions.Builder optionsBuilder =
-          temproalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
-      return WorkflowClient.newInstance(service, optionsBuilder.build());
-    } else {
-      return WorkflowClient.newInstance(service);
-    }
+    WorkflowClientOptions.Builder optionsBuilder =
+        temporalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
+    return WorkflowClient.newInstance(service, optionsBuilder.build());
   }
 }
