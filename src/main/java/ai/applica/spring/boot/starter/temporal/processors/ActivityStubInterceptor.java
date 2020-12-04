@@ -49,19 +49,9 @@ import org.springframework.util.ReflectionUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class ActivityStubInterceptor {
-  private Class<?> targetClass;
-
-  private TemporalOptionsConfiguration temporalOptionsConfiguration;
-  private TemporalProperties temporalProperties;
-
-  public ActivityStubInterceptor(
-      Class<?> targetClass,
-      TemporalOptionsConfiguration temporalOptionsConfiguration,
-      TemporalProperties temporalProperties) {
-    this.targetClass = targetClass;
-    this.temporalOptionsConfiguration = temporalOptionsConfiguration;
-    this.temporalProperties = temporalProperties;
-  }
+  private final Class<?> targetClass;
+  private final TemporalOptionsConfiguration temporalOptionsConfiguration;
+  private final TemporalProperties temporalProperties;
 
   @RuntimeType
   public Object process(@This Object obj, @SuperCall Callable<Object> call) throws Exception {
@@ -114,9 +104,7 @@ public class ActivityStubInterceptor {
     }
 
     // from default method
-    if (temporalOptionsConfiguration != null) {
-      options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
-    }
+    options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
     if (activityStubAnnotation.duration() != -1) {
       options.setScheduleToCloseTimeout(
           Duration.of(
@@ -149,7 +137,7 @@ public class ActivityStubInterceptor {
                 method ->
                     AnnotationUtils.findAnnotation(method, ActivityOptionsModifier.class) != null
                         && method.getParameterTypes()[0] == field.getType());
-    if (methods.size() > 0) {
+    if (!methods.isEmpty()) {
       Method method = (Method) methods.toArray()[0];
       log.debug("Found options modifier by name {} on object {}", method.getName(), targetClass);
       ReflectionUtils.makeAccessible(method);
