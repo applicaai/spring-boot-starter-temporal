@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.2-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.3-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.2-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.5.2-SNAPSHOT</version>
+    <version>0.5.3-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
@@ -94,9 +94,14 @@ Or you can use:
     scheduleToCloseTimeout: 10
     scheduleToCloseTimeoutUnit: SECONDS
   activityStubs:
-    #where this is part of the name of activiti stub: "WorkflowClass.ActivityInterface"
+    #values for GreetingActivities used in any workflow (default)
     GreetingActivities:
       scheduleToCloseTimeout: 20
+      scheduleToCloseTimeoutUnit: SECONDS
+    #value for GreetingActivities used in HelloWorkflow interface implementation; it has higher precedence than the default
+    #please notice, how to escape dot character in yaml keys 
+    "[HelloWorkflow.GreetingActivities]":
+      scheduleToCloseTimeout: 10
       scheduleToCloseTimeoutUnit: SECONDS
 ```
 
