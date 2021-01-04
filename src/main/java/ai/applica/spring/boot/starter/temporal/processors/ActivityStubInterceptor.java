@@ -117,16 +117,18 @@ public class ActivityStubInterceptor {
     }
     // from configuration of particular activity stub
     if (temporalProperties.getActivityStubs() != null) {
-      String stubName =
-          field.getDeclaringClass().getSimpleName() + "." + field.getType().getSimpleName();
-      for (Map.Entry<String, ActivityStubOptions> entry :
-          temporalProperties.getActivityStubs().entrySet()) {
-        if (stubName.contains(entry.getKey())) {
-          options.setScheduleToCloseTimeout(
-              Duration.of(
-                  entry.getValue().getScheduleToCloseTimeout(),
-                  ChronoUnit.valueOf(entry.getValue().getScheduleToCloseTimeoutUnit())));
-        }
+      String simpleStubName = field.getType().getSimpleName();
+      String fullStubName =
+          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
+      Map<String, ActivityStubOptions> stubMap = temporalProperties.getActivityStubs();
+
+      ActivityStubOptions applicableOptions =
+          stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
+      if (applicableOptions != null) {
+        options.setScheduleToCloseTimeout(
+            Duration.of(
+                applicableOptions.getScheduleToCloseTimeout(),
+                ChronoUnit.valueOf(applicableOptions.getScheduleToCloseTimeoutUnit())));
       }
     }
     // chk for modifier
