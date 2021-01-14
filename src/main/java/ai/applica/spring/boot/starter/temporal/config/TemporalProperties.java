@@ -17,6 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal.config;
 
+import java.time.Duration;
 import java.util.Map;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -63,10 +64,9 @@ public class TemporalProperties {
   @Data
   @NoArgsConstructor
   public static class ActivityStubOptions {
-
-    private Long scheduleToCloseTimeout;
-
-    private String scheduleToCloseTimeoutUnit;
+    private Duration scheduleToCloseTimeout;
+    private Duration scheduleToStartTimeout;
+    private Duration startToCloseTimeout;
   }
 
   public Map<String, WorkflowOption> getWorkflows() {

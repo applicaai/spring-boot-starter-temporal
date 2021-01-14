@@ -22,14 +22,12 @@ spring.temporal:
   # createWorkers: true
   activityStubs:
     GreetingActivities:
-      scheduleToCloseTimeout: 20
-      scheduleToCloseTimeoutUnit: SECONDS
+      scheduleToCloseTimeout: PT20S
     PropertiesActivity:
-      scheduleToCloseTimeout: 1
-      scheduleToCloseTimeoutUnit: SECONDS
+      scheduleToCloseTimeout: PT1S
     "[PropertiesDotWorkflow.PropertiesActivity]":
-      scheduleToCloseTimeout: 2
-      scheduleToCloseTimeoutUnit: SECONDS
+      scheduleToStartTimeout: PT1S
+      startToCloseTimeout: PT1S
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS

@@ -25,11 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesActivity;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflowImpl;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.*;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
@@ -84,10 +80,10 @@ public class HelloPropertiesTest {
     dotWorker.registerActivitiesImplementations(timeoutActivity);
     testEnv.start();
 
-    Duration timeout = workflow.getTimeout();
-    assertThat(timeout).isEqualTo(Duration.ofSeconds(1));
+    //    Duration scheduleToCloseTimeout = workflow.getScheduleToCloseTimeout();
+    //    assertThat(scheduleToCloseTimeout).isEqualTo(Duration.ofSeconds(1));
 
-    Duration dotTimeout = dotWorkflow.getTimeout();
-    assertThat(dotTimeout).isEqualTo(Duration.ofSeconds(2));
+    Duration dotWorkflowStartToCloseTimeout = dotWorkflow.getStartToCloseTimeout();
+    assertThat(dotWorkflowStartToCloseTimeout).isEqualTo(Duration.ofSeconds(1));
   }
 }

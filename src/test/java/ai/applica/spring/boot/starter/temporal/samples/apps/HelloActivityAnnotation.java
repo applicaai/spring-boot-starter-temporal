@@ -71,7 +71,7 @@ public class HelloActivityAnnotation {
      * and for child workflows.
      */
     @ActivityStub(
-        duration = 100,
+        duration = "PT100S",
         retryOptions =
             @RetryActivityOptions(
                 initialInterval = 1,

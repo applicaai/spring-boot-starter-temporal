@@ -69,7 +69,7 @@ public class HelloAsyncActivityCompletion {
      * invocations. Because activities are reentrant, only a single stub can be used for multiple
      * activity invocations.
      */
-    @ActivityStub(duration = 10)
+    @ActivityStub(duration = "PT10S")
     private GreetingActivities activities;
 
     @Override
@@ -89,8 +89,8 @@ public class HelloAsyncActivityCompletion {
     }
     /**
      * Demonstrates how to implement an activity asynchronously. When {@link
-     * io.temporal.activity.ActivityExecutionContext#doNotCompleteOnReturn()} is called the activity
-     * implementation function returning doesn't complete the activity.
+     * ActivityExecutionContext#doNotCompleteOnReturn()} is called the activity implementation
+     * function returning doesn't complete the activity.
      */
     @Override
     public String composeGreeting(String greeting, String name) {

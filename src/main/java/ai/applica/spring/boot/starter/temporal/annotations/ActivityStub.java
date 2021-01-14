@@ -23,16 +23,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
- * duration unit being ChronoUnit string equivalent.
+ * To mark activity on a Workflow to make it a stub. It tells how long can activity take from start
+ * to close. If activity takes longer then timeout exception is thrown.
+ *
+ * <p>One must specify duration string according to java.time.Duration format.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
 
-  long duration() default -1;
-
-  String durationUnits() default "SECONDS";
+  String duration() default "PT0S";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
 }

@@ -32,7 +32,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +48,7 @@ import org.springframework.util.ReflectionUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class ActivityStubInterceptor {
+  private static final String defaultDuration = "PT0S";
   private final Class<?> targetClass;
   private final TemporalOptionsConfiguration temporalOptionsConfiguration;
   private final TemporalProperties temporalProperties;
@@ -97,19 +97,14 @@ public class ActivityStubInterceptor {
     // from configuration
     if (temporalProperties.getActivityStubDefaults() != null) {
       ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
-      options.setScheduleToCloseTimeout(
-          Duration.of(
-              activityStubDefaults.getScheduleToCloseTimeout(),
-              ChronoUnit.valueOf(activityStubDefaults.getScheduleToCloseTimeoutUnit())));
+      setupTimeouts(options, activityStubDefaults);
     }
 
     // from default method
     options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
-    if (activityStubAnnotation.duration() != -1) {
-      options.setScheduleToCloseTimeout(
-          Duration.of(
-              activityStubAnnotation.duration(),
-              ChronoUnit.valueOf(activityStubAnnotation.durationUnits())));
+    String duration = activityStubAnnotation.duration();
+    if (!defaultDuration.equals(duration)) {
+      options.setStartToCloseTimeout(Duration.parse(duration));
     }
 
     if (nonDefaultRetryOptions(activityStubAnnotation.retryOptions())) {
@@ -125,10 +120,7 @@ public class ActivityStubInterceptor {
       ActivityStubOptions applicableOptions =
           stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
       if (applicableOptions != null) {
-        options.setScheduleToCloseTimeout(
-            Duration.of(
-                applicableOptions.getScheduleToCloseTimeout(),
-                ChronoUnit.valueOf(applicableOptions.getScheduleToCloseTimeoutUnit())));
+        setupTimeouts(options, applicableOptions);
       }
     }
     // chk for modifier
@@ -150,9 +142,15 @@ public class ActivityStubInterceptor {
       }
     } else {
       log.debug(
-          "Not options modifier method found for {} on object {}", field.getName(), targetClass);
+          "No options modifier method found for {} on object {}", field.getName(), targetClass);
     }
     return options.build();
+  }
+
+  private void setupTimeouts(Builder options, ActivityStubOptions activityStubDefaults) {
+    options.setScheduleToCloseTimeout(activityStubDefaults.getScheduleToCloseTimeout());
+    options.setScheduleToStartTimeout(activityStubDefaults.getScheduleToStartTimeout());
+    options.setStartToCloseTimeout(activityStubDefaults.getStartToCloseTimeout());
   }
 
   private RetryOptions mergeRetryOptions(

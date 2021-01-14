@@ -44,35 +44,48 @@ public class HelloProperties {
   @WorkflowInterface
   public interface PropertiesWorkflow {
     /** @return activity timeout value */
+    //    @WorkflowMethod
+    //    Duration getScheduleToCloseTimeout();
+
     @WorkflowMethod
-    Duration getTimeout();
+    Duration getStartToCloseTimeout();
   }
 
   /** Workflow interface has to have at least one method annotated with @WorkflowMethod. */
   @WorkflowInterface
   public interface PropertiesDotWorkflow {
     /** @return activity timeout value */
+    //    @WorkflowMethod
+    //    Duration getScheduleToCloseTimeout();
+
     @WorkflowMethod
-    Duration getTimeout();
+    Duration getStartToCloseTimeout();
   }
 
-  /** Activity interface is just a POJI. */
+  /** Activity interface is just a POJO. */
   @ActivityInterface
   public interface PropertiesActivity {
+    //    @ActivityMethod
+    //    Duration getScheduleToCloseTimeout();
+
     @ActivityMethod
-    Duration getTimeout();
+    Duration getStartToCloseTimeout();
   }
 
-  /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class PropertiesWorkflowImpl implements PropertiesWorkflow {
 
     @ActivityStub private PropertiesActivity activity;
 
+    //    @Override
+    //    public Duration getScheduleToCloseTimeout() {
+    //      return activity.getScheduleToCloseTimeout();
+    //    }
+
     @Override
-    public Duration getTimeout() {
-      return activity.getTimeout();
+    public Duration getStartToCloseTimeout() {
+      return activity.getStartToCloseTimeout();
     }
   }
 
@@ -83,18 +96,31 @@ public class HelloProperties {
 
     @ActivityStub private PropertiesActivity activity;
 
+    //    @Override
+    //    public Duration getScheduleToCloseTimeout() {
+    //      return activity.getScheduleToCloseTimeout();
+    //    }
+
     @Override
-    public Duration getTimeout() {
-      return activity.getTimeout();
+    public Duration getStartToCloseTimeout() {
+      return activity.getStartToCloseTimeout();
     }
   }
 
   @Service
   static class PropertiesActivityImpl implements PropertiesActivity {
 
+    //    @Override
+    //    public Duration getScheduleToCloseTimeout() {
+    //      return Activity.getExecutionContext().getInfo().getScheduleToCloseTimeout();
+    //    }
+
     @Override
-    public Duration getTimeout() {
-      return Activity.getExecutionContext().getInfo().getScheduleToCloseTimeout();
+    public Duration getStartToCloseTimeout() {
+      // TODO: Find equivalent to...
+      //      Activity.getExecutionContext().getInfo().getScheduleToStartTimeout();
+
+      return Activity.getExecutionContext().getInfo().getStartToCloseTimeout();
     }
   }
 }
