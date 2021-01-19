@@ -48,7 +48,7 @@ import org.springframework.util.ReflectionUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class ActivityStubInterceptor {
-  private static final String defaultDuration = "PT0S";
+  private static final String DEFAULT_DURATION = "PT0S";
   private final Class<?> targetClass;
   private final TemporalOptionsConfiguration temporalOptionsConfiguration;
   private final TemporalProperties temporalProperties;
@@ -103,7 +103,7 @@ public class ActivityStubInterceptor {
     // from default method
     options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
     String duration = activityStubAnnotation.duration();
-    if (!defaultDuration.equals(duration)) {
+    if (!DEFAULT_DURATION.equals(duration)) {
       options.setStartToCloseTimeout(Duration.parse(duration));
     }
 

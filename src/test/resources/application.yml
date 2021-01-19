@@ -24,10 +24,13 @@ spring.temporal:
     GreetingActivities:
       scheduleToCloseTimeout: PT20S
     PropertiesActivity:
-      scheduleToCloseTimeout: PT1S
-    "[PropertiesDotWorkflow.PropertiesActivity]":
       scheduleToStartTimeout: PT1S
-      startToCloseTimeout: PT1S
+      startToCloseTimeout: PT15S
+    "[PropertiesDotWorkflow.PropertiesActivity]":
+      scheduleToCloseTimeout: PT3M
+    TimeoutPropertiesActivity:
+      startToCloseTimeout: PT1001S
+      scheduleToCloseTimeout: PT1001S
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS

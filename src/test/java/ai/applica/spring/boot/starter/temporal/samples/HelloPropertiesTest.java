@@ -25,10 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.*;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
+import java.util.Map;
+import lombok.var;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,29 +47,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class HelloPropertiesTest {
 
   private TestWorkflowEnvironment testEnv;
-  private Worker worker;
-  private Worker dotWorker;
-  PropertiesWorkflow workflow;
-  PropertiesDotWorkflow dotWorkflow;
 
   @Autowired WorkflowFactory fact;
-  @Autowired PropertiesActivity timeoutActivity;
+  @Autowired PropertiesActivity propertiesActivity;
+  @Autowired TimeoutPropertiesActivity timeoutPropertiesActivity;
 
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = fact.makeWorker(testEnv, PropertiesWorkflowImpl.class);
-    dotWorker = fact.makeWorker(testEnv, PropertiesDotWorkflowImpl.class);
-
-    // Get a workflow stub using the same task queue the worker uses.
-    workflow =
-        fact.makeStub(
-            PropertiesWorkflow.class, PropertiesWorkflowImpl.class, testEnv.getWorkflowClient());
-    dotWorkflow =
-        fact.makeStub(
-            PropertiesDotWorkflow.class,
-            PropertiesDotWorkflowImpl.class,
-            testEnv.getWorkflowClient());
   }
 
   @After
@@ -75,15 +63,57 @@ public class HelloPropertiesTest {
   }
 
   @Test
-  public void testTimeoutsFromPropertiesAreReadCorrectly() {
-    worker.registerActivitiesImplementations(timeoutActivity);
-    dotWorker.registerActivitiesImplementations(timeoutActivity);
+  public void shouldAssignProperties() {
+    var workflow =
+        createWorkflow(PropertiesWorkflow.class, PropertiesWorkflowImpl.class, propertiesActivity);
+
     testEnv.start();
 
-    //    Duration scheduleToCloseTimeout = workflow.getScheduleToCloseTimeout();
-    //    assertThat(scheduleToCloseTimeout).isEqualTo(Duration.ofSeconds(1));
+    Map<String, Duration> workflowTimeouts = workflow.getTimeouts();
+    assertThat(workflowTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(Duration.ofSeconds(1000)); // workflow timeout
+    assertThat(workflowTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(Duration.ofSeconds(15));
+  }
 
-    Duration dotWorkflowStartToCloseTimeout = dotWorkflow.getStartToCloseTimeout();
-    assertThat(dotWorkflowStartToCloseTimeout).isEqualTo(Duration.ofSeconds(1));
+  @Test
+  public void shouldSetStartToCloseValueToScheduleToCloseTimeout() {
+    var workflow =
+        createWorkflow(
+            PropertiesDotWorkflow.class, PropertiesDotWorkflowImpl.class, propertiesActivity);
+
+    testEnv.start();
+
+    Duration threeMinutes = Duration.ofMinutes(3);
+    Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
+    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(threeMinutes);
+    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(threeMinutes);
+  }
+
+  @Test
+  public void shouldAssignWorkflowTimeouts() {
+    var workflow =
+        createWorkflow(
+            PropertiesTimeoutWorkflow.class,
+            PropertiesTimeoutWorkflowImpl.class,
+            timeoutPropertiesActivity);
+    testEnv.start();
+
+    Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
+
+    var workflowTimeout = 1000;
+    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(Duration.ofSeconds(workflowTimeout));
+    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+        .isEqualTo(Duration.ofSeconds(workflowTimeout));
+  }
+
+  private <T> T createWorkflow(
+      Class<T> workflowInterface, Class<? extends T> workflowClass, Object activity) {
+    Worker worker = fact.makeWorker(testEnv, workflowClass);
+    worker.registerActivitiesImplementations(activity);
+    return fact.makeStub(workflowInterface, workflowClass, testEnv.getWorkflowClient());
   }
 }

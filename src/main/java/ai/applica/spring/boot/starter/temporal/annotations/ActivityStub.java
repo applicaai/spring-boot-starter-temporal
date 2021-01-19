@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * To mark activity on a Workflow to make it a stub. It tells how long can activity take from start
- * to close. If activity takes longer then timeout exception is thrown.
+ * to close. If activity takes longer, then timeout exception is thrown.
  *
  * <p>One must specify duration string according to java.time.Duration format.
  */
