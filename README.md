@@ -34,7 +34,7 @@ public class Application {
   }
 }
 ```
-You will also need the source of application properties with something like this (activity timeouts use ISO 8601 format):
+You will also need the source of application properties with something like this:
 ```yaml
 spring.temporal:
   # host: localhost
@@ -86,6 +86,8 @@ Activity stub instantiation you annotate it with `@ActivityStub`:
 @ActivityStub(duration = "PT10S")
 public SomeActivity someActivity;
 ```
+
+Activity duration has ISO 8601 format
 
 There is a duration parameter that's setting `StartToCloseTimeout` on stub.
 Or you can use:
