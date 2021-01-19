@@ -31,7 +31,6 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.Map;
-import lombok.var;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +63,7 @@ public class HelloPropertiesTest {
 
   @Test
   public void shouldAssignProperties() {
-    var workflow =
+    PropertiesWorkflow workflow =
         createWorkflow(PropertiesWorkflow.class, PropertiesWorkflowImpl.class, propertiesActivity);
 
     testEnv.start();
@@ -78,7 +77,7 @@ public class HelloPropertiesTest {
 
   @Test
   public void shouldSetStartToCloseValueToScheduleToCloseTimeout() {
-    var workflow =
+    PropertiesDotWorkflow workflow =
         createWorkflow(
             PropertiesDotWorkflow.class, PropertiesDotWorkflowImpl.class, propertiesActivity);
 
@@ -94,7 +93,7 @@ public class HelloPropertiesTest {
 
   @Test
   public void shouldAssignWorkflowTimeouts() {
-    var workflow =
+    PropertiesTimeoutWorkflow workflow =
         createWorkflow(
             PropertiesTimeoutWorkflow.class,
             PropertiesTimeoutWorkflowImpl.class,
@@ -103,7 +102,7 @@ public class HelloPropertiesTest {
 
     Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
 
-    var workflowTimeout = 1000;
+    int workflowTimeout = 1000;
     assertThat(workflowStartToCloseTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(Duration.ofSeconds(workflowTimeout));
     assertThat(workflowStartToCloseTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))

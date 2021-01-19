@@ -37,7 +37,7 @@ dependencies {
 }
 
 group = 'com.github.applicaai'
-version = '0.5.4-SNAPSHOT'
+version = '0.6.0-SNAPSHOT'
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8

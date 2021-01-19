@@ -34,7 +34,7 @@ public class Application {
   }
 }
 ```
-You will also need the source of application properties with something like this:
+You will also need the source of application properties with something like this (activity timeouts use ISO 8601 format):
 ```yaml
 spring.temporal:
   # host: localhost
@@ -56,7 +56,7 @@ For the docker running locally you do not need any configuration of the host. Fo
 not to repeat same configuration on every workflow.
 
 ### Defining workflow 
-Than for the workflow implementation there are some little changes from 
+Then for the workflow implementation there are some little changes from 
 original Temporal:
 ```java
 @Component
@@ -83,26 +83,29 @@ Then for every activity in workflow implementation class instead of
 Activity stub instantiation you annotate it with `@ActivityStub`:
 
 ```java
-@ActivityStub(duration = 10, durationUnits = "SECONDS")
+@ActivityStub(duration = "PT10S")
 public SomeActivity someActivity;
 ```
 
-There is a duration parameter that's setting `ScheduleToCloseTimeout` on stub.
+There is a duration parameter that's setting `StartToCloseTimeout` on stub.
 Or you can use:
 ```yaml
   activityStubDefaults:
-    scheduleToCloseTimeout: 10
-    scheduleToCloseTimeoutUnit: SECONDS
+    scheduleToCloseTimeout: PT10S
   activityStubs:
     #values for GreetingActivities used in any workflow (default)
     GreetingActivities:
-      scheduleToCloseTimeout: 20
-      scheduleToCloseTimeoutUnit: SECONDS
+      scheduleToCloseTimeout: PT20S
+    PropertiesActivity:
+      scheduleToStartTimeout: PT1S
+      startToCloseTimeout: PT15S
     #value for GreetingActivities used in HelloWorkflow interface implementation; it has higher precedence than the default
     #please notice, how to escape dot character in yaml keys 
-    "[HelloWorkflow.GreetingActivities]":
-      scheduleToCloseTimeout: 10
-      scheduleToCloseTimeoutUnit: SECONDS
+    "[PropertiesDotWorkflow.PropertiesActivity]":
+      scheduleToCloseTimeout: PT3M
+    TimeoutPropertiesActivity:
+      startToCloseTimeout: PT100H
+      scheduleToCloseTimeout: PT1M
 ```
 
 ### Defining activities
@@ -147,7 +150,7 @@ to find your method and you will receive activity options
 builder as second argument.
 
 ```java
-@ActivityStub(duration = 10)
+@ActivityStub(duration = "PT10S")
 private GreetingActivities activities;
 
 @ActivityOptionsModifier
