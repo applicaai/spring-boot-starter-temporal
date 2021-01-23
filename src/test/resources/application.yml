@@ -69,4 +69,6 @@ spring.temporal:
   activityWorkers:
     HelloActivitySepareteWorkerActivity:
       taskQueue: HelloActivitySepareteWorkerActivity
+    SimpleActivity:
+      taskQueue: SimpleActivity
 

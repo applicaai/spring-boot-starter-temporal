@@ -17,9 +17,11 @@
 
 package ai.applica.spring.boot.starter.temporal;
 
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalActivity;
 import org.springframework.stereotype.Service;
 
 @Service
+@TemporalActivity("SimpleActivity")
 public class SimpleServiceImpl implements SimpleService {
   public String say(String sth) {
     System.out.println(sth);

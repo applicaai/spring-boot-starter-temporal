@@ -101,27 +101,27 @@ public class TemporalProperties {
     return workflows;
   }
 
-  public Map<String, WorkflowOption> activityWorkers() {
+  public Map<String, WorkflowOption> getActivityWorkers() {
     if (!addedDefaultsToActivities) {
       synchronized (this) {
         activityWorkers.forEach(
             (key, value) -> {
               if (value.getExecutionTimeout() == null) {
-                value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());
+                value.setExecutionTimeout(activityWorkerDefaults.getExecutionTimeout());
               }
               if (value.getExecutionTimeoutUnit() == null) {
-                value.setExecutionTimeoutUnit(workflowDefaults.getExecutionTimeoutUnit());
+                value.setExecutionTimeoutUnit(activityWorkerDefaults.getExecutionTimeoutUnit());
               }
               if (value.getActivityPoolSize() == null) {
-                value.setActivityPoolSize(workflowDefaults.getActivityPoolSize());
+                value.setActivityPoolSize(activityWorkerDefaults.getActivityPoolSize());
               }
               if (value.getWorkflowPoolSize() == null) {
-                value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
+                value.setWorkflowPoolSize(activityWorkerDefaults.getWorkflowPoolSize());
               }
-              addedDefaultsToWorkflows = true;
+              addedDefaultsToActivities = true;
             });
       }
     }
-    return workflows;
+    return activityWorkers;
   }
 }

@@ -87,10 +87,13 @@ public class ActivityAnnotationBeanPostProcessor
   }
 
   private WorkerOptions getWorkerOptions(WorkflowOption option) {
-    return WorkerOptions.newBuilder()
-        .setMaxConcurrentActivityExecutionSize(option.getActivityPoolSize())
-        .setMaxConcurrentWorkflowTaskExecutionSize(option.getWorkflowPoolSize())
-        .build();
+    WorkerOptions.Builder workerOptions =
+        WorkerOptions.newBuilder()
+            .setMaxConcurrentActivityExecutionSize(option.getActivityPoolSize());
+    if (option.getWorkflowPoolSize() != null) {
+      workerOptions.setMaxConcurrentWorkflowTaskExecutionSize(option.getWorkflowPoolSize());
+    }
+    return workerOptions.build();
   }
 
   @Override
