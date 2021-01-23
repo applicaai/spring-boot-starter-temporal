@@ -37,13 +37,19 @@ public class TemporalProperties {
 
   private WorkflowOption workflowDefaults;
 
+  private WorkflowOption activityWorkerDefaults;
+
   private Map<String, WorkflowOption> workflows;
+
+  private Map<String, WorkflowOption> activityWorkers;
 
   private ActivityStubOptions activityStubDefaults;
 
   private Map<String, ActivityStubOptions> activityStubs;
 
   private boolean addedDefaultsToWorkflows = false;
+
+  private boolean addedDefaultsToActivities = false;
 
   @Data
   @NoArgsConstructor
@@ -64,6 +70,8 @@ public class TemporalProperties {
   @NoArgsConstructor
   public static class ActivityStubOptions {
 
+    private String taskQueue;
+
     private Long scheduleToCloseTimeout;
 
     private String scheduleToCloseTimeoutUnit;
@@ -73,6 +81,30 @@ public class TemporalProperties {
     if (!addedDefaultsToWorkflows) {
       synchronized (this) {
         workflows.forEach(
+            (key, value) -> {
+              if (value.getExecutionTimeout() == null) {
+                value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());
+              }
+              if (value.getExecutionTimeoutUnit() == null) {
+                value.setExecutionTimeoutUnit(workflowDefaults.getExecutionTimeoutUnit());
+              }
+              if (value.getActivityPoolSize() == null) {
+                value.setActivityPoolSize(workflowDefaults.getActivityPoolSize());
+              }
+              if (value.getWorkflowPoolSize() == null) {
+                value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
+              }
+              addedDefaultsToWorkflows = true;
+            });
+      }
+    }
+    return workflows;
+  }
+
+  public Map<String, WorkflowOption> activityWorkers() {
+    if (!addedDefaultsToActivities) {
+      synchronized (this) {
+        activityWorkers.forEach(
             (key, value) -> {
               if (value.getExecutionTimeout() == null) {
                 value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());

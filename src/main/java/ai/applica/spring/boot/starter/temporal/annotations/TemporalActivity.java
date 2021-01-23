@@ -23,18 +23,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
- * duration unit being ChronoUnit string equivalent.
+ * Indicates that service is an appropriate temporal activity implementation one must specify name
+ * of activity for parameters retrieval.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface ActivityStub {
-
-  long duration() default -1;
-
-  String durationUnits() default "SECONDS";
-
-  RetryActivityOptions retryOptions() default @RetryActivityOptions;
-
-  String taskQueue() default "";
+@Target({ElementType.TYPE})
+public @interface TemporalActivity {
+  /** Link to activity properties to be loaded from config */
+  String value();
 }

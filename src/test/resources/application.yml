@@ -30,6 +30,10 @@ spring.temporal:
     "[PropertiesDotWorkflow.PropertiesActivity]":
       scheduleToCloseTimeout: 2
       scheduleToCloseTimeoutUnit: SECONDS
+    "[GreetingSeparateWorkflow.GreetingActivities]":
+      taskQueue: HelloActivitySepareteWorkerActivity
+      scheduleToCloseTimeout: 2
+      scheduleToCloseTimeoutUnit: SECONDS
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS
@@ -58,3 +62,11 @@ spring.temporal:
       executiontimeoutUnit: DAYS
     HelloProperties:
       taskQueue: HelloProperties
+    HelloActivitySepareteWorkerWorkflow:
+      taskQueue: HelloActivitySepareteWorkerWorkflow
+  activityWorkerDefaults:
+    activityPoolSize: 10
+  activityWorkers:
+    HelloActivitySepareteWorkerActivity:
+      taskQueue: HelloActivitySepareteWorkerActivity
+

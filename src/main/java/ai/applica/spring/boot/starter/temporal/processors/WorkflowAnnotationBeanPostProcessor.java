@@ -28,7 +28,6 @@ import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.workflow.WorkflowMethod;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -116,7 +115,7 @@ public class WorkflowAnnotationBeanPostProcessor
           new WorkflowFactory(temporalProperties, workflowClient, temporalOptionsConfiguration);
 
       try {
-        List<Object> activities = getBeansByAnnotation(beanName, ActivityStub.class, targetClass);
+        List<Object> activities = getBeansForInnerWorker(beanName, targetClass);
 
         if (!activities.isEmpty()) {
           worker.registerActivitiesImplementations(activities.toArray());
@@ -132,13 +131,12 @@ public class WorkflowAnnotationBeanPostProcessor
     }
     return bean;
   }
-
-  private List<Object> getBeansByAnnotation(
-      final String beanName, Class annotationClass, Class<?> targetClass) {
+  /** List beans annotated with ActivitiStub with no taskQueue to call. */
+  private List<Object> getBeansForInnerWorker(final String beanName, Class<?> targetClass) {
     List<Object> activities = new ArrayList<Object>();
     for (Field field : targetClass.getDeclaredFields()) {
-      Annotation[] annotations = field.getAnnotationsByType(annotationClass);
-      if (annotations.length > 0) {
+      ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
+      if (annotations.length > 0 && "".equals(annotations[0].taskQueue())) {
         DependencyDescriptor desc = new DependencyDescriptor(field, true);
         Object dep = ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
         activities.add(dep);

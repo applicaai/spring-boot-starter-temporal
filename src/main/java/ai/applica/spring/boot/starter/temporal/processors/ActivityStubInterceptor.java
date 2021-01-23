@@ -93,7 +93,9 @@ public class ActivityStubInterceptor {
 
     // Build default options
     Builder options = ActivityOptions.newBuilder();
-
+    if (!"".equals(activityStubAnnotation.taskQueue())) {
+      options.setTaskQueue(activityStubAnnotation.taskQueue());
+    }
     // from configuration
     if (temporalProperties.getActivityStubDefaults() != null) {
       ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
@@ -125,6 +127,9 @@ public class ActivityStubInterceptor {
       ActivityStubOptions applicableOptions =
           stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
       if (applicableOptions != null) {
+        if (applicableOptions.getTaskQueue() != null) {
+          options.setTaskQueue(applicableOptions.getTaskQueue());
+        }
         options.setScheduleToCloseTimeout(
             Duration.of(
                 applicableOptions.getScheduleToCloseTimeout(),
