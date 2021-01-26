@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.4-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.6.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.5.4-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.5.4-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
 </dependency>
 ```
 ## Usage
@@ -121,6 +121,32 @@ public class SomeActivityImpl implements SomeActivity {
 }
 ```
 
+If you would like to have the activity on separate worker add `@TemporalActivity` annotation:
+```java
+@Service
+@TemporalActivity("SomeName")
+public class SomeActivityImpl implements SomeActivity {
+  public String say(String string) {
+    ...
+  }
+}
+```
+
+And add parameters to set task queue and optionally worker parameters:
+
+```yaml
+  activityWorkerDefaults:
+    activityPoolSize: 9
+   activityWorkers:
+    SomeName:
+      activityPoolSize: 10
+      taskQueue: someActivityQueue
+
+```
+
+If you do so remember to add `taskQueue` parameter to annotation of the activity stub on the workflow as well.
+You can find example of such a process in `samples/app` folder in the tests `HelloActivitySepareteWorker.java`.
+
 ### Calling your workflow
 
 To call your workflow you will need `WorkflowFactory` an one of its many
@@ -200,5 +226,5 @@ spring.temporal:
 You can also disable creation of workflows for given test when testing using annotation `@TemporalTest`
 ### Writing tests
 
-Pleas look into test directory `samples` folder in the sources.
+Please look into test directory `samples` folder in the sources.
 

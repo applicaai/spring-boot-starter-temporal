@@ -38,13 +38,19 @@ public class TemporalProperties {
 
   private WorkflowOption workflowDefaults;
 
+  private WorkflowOption activityWorkerDefaults;
+
   private Map<String, WorkflowOption> workflows;
+
+  private Map<String, WorkflowOption> activityWorkers;
 
   private ActivityStubOptions activityStubDefaults;
 
   private Map<String, ActivityStubOptions> activityStubs;
 
   private boolean addedDefaultsToWorkflows = false;
+
+  private boolean addedDefaultsToActivities = false;
 
   @Data
   @NoArgsConstructor
@@ -64,6 +70,7 @@ public class TemporalProperties {
   @Data
   @NoArgsConstructor
   public static class ActivityStubOptions {
+    private String taskQueue;
     private Duration scheduleToCloseTimeout;
     private Duration scheduleToStartTimeout;
     private Duration startToCloseTimeout;
@@ -91,5 +98,29 @@ public class TemporalProperties {
       }
     }
     return workflows;
+  }
+
+  public Map<String, WorkflowOption> getActivityWorkers() {
+    if (!addedDefaultsToActivities) {
+      synchronized (this) {
+        activityWorkers.forEach(
+            (key, value) -> {
+              if (value.getExecutionTimeout() == null) {
+                value.setExecutionTimeout(activityWorkerDefaults.getExecutionTimeout());
+              }
+              if (value.getExecutionTimeoutUnit() == null) {
+                value.setExecutionTimeoutUnit(activityWorkerDefaults.getExecutionTimeoutUnit());
+              }
+              if (value.getActivityPoolSize() == null) {
+                value.setActivityPoolSize(activityWorkerDefaults.getActivityPoolSize());
+              }
+              if (value.getWorkflowPoolSize() == null) {
+                value.setWorkflowPoolSize(activityWorkerDefaults.getWorkflowPoolSize());
+              }
+              addedDefaultsToActivities = true;
+            });
+      }
+    }
+    return activityWorkers;
   }
 }

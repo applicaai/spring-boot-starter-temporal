@@ -35,4 +35,6 @@ public @interface ActivityStub {
   String duration() default "PT0S";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
+
+  String taskQueue() default "";
 }

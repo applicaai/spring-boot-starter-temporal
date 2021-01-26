@@ -44,6 +44,7 @@ import net.bytebuddy.implementation.bind.annotation.This;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -93,7 +94,9 @@ public class ActivityStubInterceptor {
 
     // Build default options
     Builder options = ActivityOptions.newBuilder();
-
+    if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
+      options.setTaskQueue(activityStubAnnotation.taskQueue());
+    }
     // from configuration
     if (temporalProperties.getActivityStubDefaults() != null) {
       ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
@@ -121,6 +124,13 @@ public class ActivityStubInterceptor {
           stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
       if (applicableOptions != null) {
         setupTimeouts(options, applicableOptions);
+        if (applicableOptions.getTaskQueue() != null) {
+          options.setTaskQueue(applicableOptions.getTaskQueue());
+        }
+//        options.setScheduleToCloseTimeout(
+//            Duration.of(
+//                applicableOptions.getScheduleToCloseTimeout(),
+//                ChronoUnit.valueOf(applicableOptions.getScheduleToCloseTimeoutUnit())));
       }
     }
     // chk for modifier

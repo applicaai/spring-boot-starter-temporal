@@ -15,22 +15,20 @@
  *  permissions and limitations under the License.
  */
 
-package ai.applica.spring.boot.starter.temporal;
+package ai.applica.spring.boot.starter.temporal.annotations;
 
-import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
-import org.springframework.stereotype.Component;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Component
-@TemporalWorkflow("two")
-public class HelloWorkflowImplTwo implements HelloWorkflow {
-
-  @ActivityStub(taskQueue = "SimpleActivity", duration = "PT10S")
-  private SimpleService simpleService;
-
-  @Override
-  public String process() {
-
-    return "Hello from " + this.getClass() + " including " + simpleService.say("Kuku");
-  }
+/**
+ * Indicates that service is an appropriate temporal activity implementation one must specify name
+ * of activity for parameters retrieval.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface TemporalActivity {
+  /** Link to activity properties to be loaded from config */
+  String value();
 }
