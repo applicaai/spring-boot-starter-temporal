@@ -116,6 +116,32 @@ public class SomeActivityImpl implements SomeActivity {
 }
 ```
 
+If you would like to have the activity on separate worker add `@TemporalActivity` annotation:
+```java
+@Service
+@TemporalActivity("SomeName")
+public class SomeActivityImpl implements SomeActivity {
+  public String say(String string) {
+    ...
+  }
+}
+```
+
+And add parameters to set task queue and optionally worker parameters:
+
+```yaml
+  activityWorkerDefaults:
+    activityPoolSize: 9
+   activityWorkers:
+    SomeName:
+      activityPoolSize: 10
+      taskQueue: someActivityQueue
+
+```
+
+If you do so remember to add `taskQueue` parameter to annotation of the activity stub on the workflow as well.
+You can find example of such a process in `samples/app` folder in the tests `HelloActivitySepareteWorker.java`.
+
 ### Calling your workflow
 
 To call your workflow you will need `WorkflowFactory` an one of its many
@@ -195,5 +221,5 @@ spring.temporal:
 You can also disable creation of workflows for given test when testing using annotation `@TemporalTest`
 ### Writing tests
 
-Pleas look into test directory `samples` folder in the sources.
+Please look into test directory `samples` folder in the sources.
 
