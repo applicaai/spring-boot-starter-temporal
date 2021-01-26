@@ -35,4 +35,6 @@ public @interface ActivityStub {
   String durationUnits() default "SECONDS";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
+
+  String taskQueue() default "";
 }
