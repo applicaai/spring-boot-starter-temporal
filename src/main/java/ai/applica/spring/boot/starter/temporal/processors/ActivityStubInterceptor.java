@@ -45,6 +45,7 @@ import net.bytebuddy.implementation.bind.annotation.This;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -93,7 +94,7 @@ public class ActivityStubInterceptor {
 
     // Build default options
     Builder options = ActivityOptions.newBuilder();
-    if (!"".equals(activityStubAnnotation.taskQueue())) {
+    if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
       options.setTaskQueue(activityStubAnnotation.taskQueue());
     }
     // from configuration
