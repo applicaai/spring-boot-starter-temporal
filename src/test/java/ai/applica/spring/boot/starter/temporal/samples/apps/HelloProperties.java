@@ -21,6 +21,9 @@
 
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
+import static ai.applica.spring.boot.starter.temporal.samples.TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY;
+import static ai.applica.spring.boot.starter.temporal.samples.TestConstants.START_TO_CLOSE_TIMEOUT_KEY;
+
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.Activity;
@@ -30,6 +33,7 @@ import io.temporal.activity.ActivityMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -39,9 +43,6 @@ import org.springframework.stereotype.Service;
  * Temporal service to be running.
  */
 public class HelloProperties {
-
-  public static final String SCHEDULE_TO_CLOSE_TIMEOUT_KEY = "scheduleToCloseTimeout";
-  public static final String START_TO_CLOSE_TIMEOUT_KEY = "startToCloseTimeout";
   static final String TASK_QUEUE = "HelloProperties";
 
   @WorkflowInterface
@@ -95,11 +96,11 @@ public class HelloProperties {
       ActivityInfo info = Activity.getExecutionContext().getInfo();
       Duration startToCloseTimeout = info.getStartToCloseTimeout();
       Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
-      return Map.of(
-          START_TO_CLOSE_TIMEOUT_KEY,
-          startToCloseTimeout,
-          SCHEDULE_TO_CLOSE_TIMEOUT_KEY,
-          scheduleToCloseTimeout);
+
+      Map<String, Duration> map = new HashMap<>();
+      map.put(START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
+      map.put(SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      return map;
     }
   }
 
@@ -135,11 +136,11 @@ public class HelloProperties {
       ActivityInfo info = Activity.getExecutionContext().getInfo();
       Duration startToCloseTimeout = info.getStartToCloseTimeout();
       Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
-      return Map.of(
-          START_TO_CLOSE_TIMEOUT_KEY,
-          startToCloseTimeout,
-          SCHEDULE_TO_CLOSE_TIMEOUT_KEY,
-          scheduleToCloseTimeout);
+
+      Map<String, Duration> map = new HashMap<>();
+      map.put(START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
+      map.put(SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      return map;
     }
   }
 }

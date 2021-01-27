@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 @TemporalWorkflow("one")
 public class HelloWorkflowImpl implements HelloWorkflow {
 
-  @ActivityStub(duration = "PT10S")
+  @ActivityStub(startToClose = "PT10S")
   public SimpleService simpleService;
 
   @Override

@@ -32,7 +32,24 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
 
-  String duration() default "PT0S";
+  /**
+   * Sets temporal scheduleToCloseTimeout
+   *
+   * @deprecated as of 1.7.0 - will be removed in next minor version
+   *     <p>Use {@link ActivityStub(scheduleToClose)} or {@link ActivityStub(startToClose)} instead.
+   */
+  @Deprecated
+  long duration() default -1;
+
+  @Deprecated
+  String durationUnits() default "SECONDS";
+
+  /** Equivalent to Temporal's scheduleToClose */
+  String scheduleToClose() default "PT0S";
+  /** Equivalent to Temporal's scheduleToStart */
+  String scheduleToStart() default "PT0S";
+  /** Equivalent to Temporal's scheduleToClose */
+  String startToClose() default "PT0S";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
 

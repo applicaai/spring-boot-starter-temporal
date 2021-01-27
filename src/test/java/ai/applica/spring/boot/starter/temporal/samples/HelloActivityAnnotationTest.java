@@ -21,9 +21,7 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -34,14 +32,15 @@ import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.CustomActivityAnnotationException;
 import ai.applica.spring.boot.starter.temporal.samples.apps.CustomActivityConfigurationException;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingActivities;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingWorkflow;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingWorkflowImpl;
 import io.temporal.api.enums.v1.RetryState;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.time.Duration;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -78,21 +77,14 @@ public class HelloActivityAnnotationTest {
       };
 
   private TestWorkflowEnvironment testEnv;
-  private Worker worker;
-  GreetingWorkflow workflow;
 
   @Autowired WorkflowFactory fact;
-  @Autowired GreetingActivities greatActivity;
+  @Autowired GreetingActivities greetingActivity;
+  @Autowired HelloActivityAnnotation.TimeoutActivity timeoutActivity;
 
   @Before
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
-
-    // Get a workflow stub using the same task queue the worker uses.
-    workflow =
-        fact.makeStub(
-            GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
   @After
@@ -103,7 +95,11 @@ public class HelloActivityAnnotationTest {
   @Test
   public void testActivityImpl() {
     // given
-    worker.registerActivitiesImplementations(greatActivity);
+    HelloActivityAnnotation.GreetingWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.GreetingWorkflow.class,
+            HelloActivityAnnotation.GreetingWorkflowImpl.class,
+            greetingActivity);
     testEnv.start();
 
     // when
@@ -129,7 +125,11 @@ public class HelloActivityAnnotationTest {
             new IllegalStateException("not yet 4"),
             new IllegalStateException("not yet 5"))
         .thenReturn("Should never reach here!");
-    worker.registerActivitiesImplementations(activities);
+    HelloActivityAnnotation.GreetingWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.GreetingWorkflow.class,
+            HelloActivityAnnotation.GreetingWorkflowImpl.class,
+            activities);
     testEnv.start();
 
     // when
@@ -163,7 +163,11 @@ public class HelloActivityAnnotationTest {
             new IllegalStateException("not yet 2"),
             new CustomActivityAnnotationException("finish now!"))
         .thenReturn("Should never reach here!");
-    worker.registerActivitiesImplementations(activities);
+    HelloActivityAnnotation.GreetingWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.GreetingWorkflow.class,
+            HelloActivityAnnotation.GreetingWorkflowImpl.class,
+            activities);
     testEnv.start();
 
     // when
@@ -196,7 +200,11 @@ public class HelloActivityAnnotationTest {
             new IllegalStateException("not yet 2"),
             new CustomActivityConfigurationException("finish now!"))
         .thenReturn("Should never reach here!");
-    worker.registerActivitiesImplementations(activities);
+    HelloActivityAnnotation.GreetingWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.GreetingWorkflow.class,
+            HelloActivityAnnotation.GreetingWorkflowImpl.class,
+            activities);
     testEnv.start();
 
     // when
@@ -215,5 +223,45 @@ public class HelloActivityAnnotationTest {
     // and check if diagnostics contains real cause of workflow failure (very tricky method, but in
     // this moment i can't see any alternatives)
     assertNotEquals(-1, testEnv.getDiagnostics().indexOf("RETRY_STATE_NON_RETRYABLE_FAILURE"));
+  }
+
+  @Test(timeout = 10000)
+  public void shouldUseDeprecatedValue() {
+    HelloActivityAnnotation.TimeoutWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.TimeoutWorkflow.class,
+            HelloActivityAnnotation.DeprecatedTimeoutWorkflowImpl.class,
+            timeoutActivity);
+    testEnv.start();
+
+    Map<String, Duration> timeouts = workflow.getTimeouts();
+    Duration scheduleToCloseTimeout = timeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY);
+    Duration startToCloseTimeout = timeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY);
+    assertEquals("PT3M", scheduleToCloseTimeout.toString());
+    assertEquals("PT3M", startToCloseTimeout.toString());
+  }
+
+  @Test(timeout = 10000)
+  public void shouldUseNewValue() {
+    HelloActivityAnnotation.TimeoutWorkflow workflow =
+        createWorkflow(
+            HelloActivityAnnotation.TimeoutWorkflow.class,
+            HelloActivityAnnotation.ComplexTimeoutWorkflowImpl.class,
+            timeoutActivity);
+    testEnv.start();
+
+    Map<String, Duration> timeouts = workflow.getTimeouts();
+    Duration startToCloseTimeout = timeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY);
+    Duration scheduleToCloseTimeout = timeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY);
+
+    assertEquals("PT2S", startToCloseTimeout.toString());
+    assertEquals("PT4S", scheduleToCloseTimeout.toString());
+  }
+
+  private <T> T createWorkflow(
+      Class<T> workflowInterface, Class<? extends T> workflowClass, Object activity) {
+    Worker worker = fact.makeWorker(testEnv, workflowClass);
+    worker.registerActivitiesImplementations(activity);
+    return fact.makeStub(workflowInterface, workflowClass, testEnv.getWorkflowClient());
   }
 }

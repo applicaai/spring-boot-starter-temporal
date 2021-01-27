@@ -24,12 +24,18 @@ package ai.applica.spring.boot.starter.temporal.samples.apps;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.RetryActivityOptions;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.TestConstants;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityInfo;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Functions;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -71,7 +77,7 @@ public class HelloActivityAnnotation {
      * and for child workflows.
      */
     @ActivityStub(
-        duration = "PT100S",
+        startToClose = "PT100S",
         retryOptions =
             @RetryActivityOptions(
                 initialInterval = 1,
@@ -108,6 +114,63 @@ public class HelloActivityAnnotation {
           "composeGreeting activity is going to complete after {} attempt",
           callCount); // should never go here
       throw new IllegalArgumentException("Activity should not be retry");
+    }
+  }
+
+  @WorkflowInterface
+  public interface TimeoutWorkflow {
+    @WorkflowMethod
+    Map<String, Duration> getTimeouts();
+  }
+
+  @ActivityInterface
+  public interface TimeoutActivity {
+    Map<String, Duration> getTimeouts();
+  }
+
+  @Component
+  @TemporalWorkflow(TASK_QUEUE)
+  public static class DeprecatedTimeoutWorkflowImpl implements TimeoutWorkflow {
+
+    @ActivityStub(duration = 3, durationUnits = "MINUTES")
+    private TimeoutActivity activity;
+
+    @Override
+    public Map<String, Duration> getTimeouts() {
+      return activity.getTimeouts();
+    }
+  }
+
+  @Service
+  public static class TimeoutActivityImpl implements TimeoutActivity {
+
+    @Override
+    public Map<String, Duration> getTimeouts() {
+      ActivityInfo info = Activity.getExecutionContext().getInfo();
+      Duration startToCloseTimeout = info.getStartToCloseTimeout();
+      Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
+
+      Map<String, Duration> map = new HashMap<>();
+      map.put(TestConstants.START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
+      map.put(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      return map;
+    }
+  }
+
+  @Component
+  @TemporalWorkflow(TASK_QUEUE)
+  public static class ComplexTimeoutWorkflowImpl implements TimeoutWorkflow {
+
+    @ActivityStub(
+        duration = 3,
+        durationUnits = "MINUTES",
+        scheduleToClose = "PT4S",
+        startToClose = "PT2S")
+    private TimeoutActivity activity;
+
+    @Override
+    public Map<String, Duration> getTimeouts() {
+      return activity.getTimeouts();
     }
   }
 }

@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.*;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
@@ -69,9 +68,9 @@ public class HelloPropertiesTest {
     testEnv.start();
 
     Map<String, Duration> workflowTimeouts = workflow.getTimeouts();
-    assertThat(workflowTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(Duration.ofSeconds(1000)); // workflow timeout
-    assertThat(workflowTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(Duration.ofSeconds(15));
   }
 
@@ -85,9 +84,9 @@ public class HelloPropertiesTest {
 
     Duration threeMinutes = Duration.ofMinutes(3);
     Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
-    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowStartToCloseTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(threeMinutes);
-    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowStartToCloseTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(threeMinutes);
   }
 
@@ -103,9 +102,9 @@ public class HelloPropertiesTest {
     Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
 
     int workflowTimeout = 1000;
-    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowStartToCloseTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(Duration.ofSeconds(workflowTimeout));
-    assertThat(workflowStartToCloseTimeouts.get(HelloProperties.START_TO_CLOSE_TIMEOUT_KEY))
+    assertThat(workflowStartToCloseTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
         .isEqualTo(Duration.ofSeconds(workflowTimeout));
   }
 
