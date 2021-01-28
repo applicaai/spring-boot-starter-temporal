@@ -253,9 +253,11 @@ public class HelloActivityAnnotationTest {
     Map<String, Duration> timeouts = workflow.getTimeouts();
     Duration startToCloseTimeout = timeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY);
     Duration scheduleToCloseTimeout = timeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY);
+    Duration heartbeatTimeout = timeouts.get(TestConstants.HEARTBEAT_TIMEOUT_KEY);
 
-    assertEquals("PT2S", startToCloseTimeout.toString());
-    assertEquals("PT4S", scheduleToCloseTimeout.toString());
+    assertEquals("PT8S", startToCloseTimeout.toString());
+    assertEquals("PT30S", scheduleToCloseTimeout.toString());
+    assertEquals("PT2S", heartbeatTimeout.toString());
   }
 
   private <T> T createWorkflow(

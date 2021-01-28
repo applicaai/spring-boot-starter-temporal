@@ -50,7 +50,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class ActivityStubInterceptor {
-  private static final String DEFAULT_DURATION = "PT0S";
+  private static final String DEFAULT_DURATION = "-PT1S";
   private final Class<?> targetClass;
   private final TemporalOptionsConfiguration temporalOptionsConfiguration;
   private final TemporalProperties temporalProperties;
@@ -95,6 +95,7 @@ public class ActivityStubInterceptor {
 
     // Build default options
     Builder options = ActivityOptions.newBuilder();
+
     if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
       options.setTaskQueue(activityStubAnnotation.taskQueue());
     }
@@ -153,7 +154,8 @@ public class ActivityStubInterceptor {
     return options.build();
   }
 
-  private void setupTimeoutFromDeprecatedProperty(ActivityStub activityStubAnnotation, Builder options) {
+  private void setupTimeoutFromDeprecatedProperty(
+      ActivityStub activityStubAnnotation, Builder options) {
     if (activityStubAnnotation.duration() != -1) {
       options.setScheduleToCloseTimeout(
           Duration.of(
@@ -175,20 +177,34 @@ public class ActivityStubInterceptor {
     if (!DEFAULT_DURATION.equals(scheduleToStartTimeout)) {
       options.setScheduleToStartTimeout(Duration.parse(scheduleToStartTimeout));
     }
+    String heartbeatTimeout = activityStub.heartbeat();
+    if (!DEFAULT_DURATION.equals(heartbeatTimeout)) {
+      options.setHeartbeatTimeout(Duration.parse(heartbeatTimeout));
+    }
   }
 
-  private void setupTimeoutsActivityStubOptions(Builder options, ActivityStubOptions activityStubAnnotation) {
-    Duration scheduleToClose = activityStubAnnotation.getScheduleToCloseTimeout();
-    if (!DEFAULT_DURATION.equals(scheduleToClose)) {
-      options.setScheduleToCloseTimeout(scheduleToClose);
+  private void setupTimeoutsActivityStubOptions(
+      Builder options, ActivityStubOptions activityStubAnnotation) {
+
+    Duration scheduleToCloseTimeout = activityStubAnnotation.getScheduleToCloseTimeout();
+    if (scheduleToCloseTimeout != null) {
+      if (!DEFAULT_DURATION.equals(scheduleToCloseTimeout.toString())) {
+        options.setScheduleToCloseTimeout(scheduleToCloseTimeout);
+      }
     }
-    Duration startToClose = activityStubAnnotation.getStartToCloseTimeout();
-    if (!DEFAULT_DURATION.equals(startToClose)) {
-      options.setStartToCloseTimeout(startToClose);
+
+    Duration startToCloseTimeout = activityStubAnnotation.getStartToCloseTimeout();
+    if (startToCloseTimeout != null) {
+      if (!DEFAULT_DURATION.equals(startToCloseTimeout.toString())) {
+        options.setStartToCloseTimeout(startToCloseTimeout);
+      }
     }
+
     Duration scheduleToStartTimeout = activityStubAnnotation.getScheduleToStartTimeout();
-    if (!DEFAULT_DURATION.equals(scheduleToStartTimeout)) {
-      options.setScheduleToStartTimeout(scheduleToStartTimeout);
+    if (scheduleToStartTimeout != null) {
+      if (!DEFAULT_DURATION.equals(scheduleToStartTimeout.toString())) {
+        options.setScheduleToStartTimeout(scheduleToStartTimeout);
+      }
     }
   }
 

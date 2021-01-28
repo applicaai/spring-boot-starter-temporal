@@ -45,11 +45,16 @@ public @interface ActivityStub {
   String durationUnits() default "SECONDS";
 
   /** Equivalent to Temporal's scheduleToClose */
-  String scheduleToClose() default "PT0S";
+  String scheduleToClose() default "-PT1S";
+
   /** Equivalent to Temporal's scheduleToStart */
-  String scheduleToStart() default "PT0S";
+  String scheduleToStart() default "-PT1S";
+
   /** Equivalent to Temporal's scheduleToClose */
-  String startToClose() default "PT0S";
+  String startToClose() default "-PT1S";
+
+  /** Equivalent to Temporal's heartbeat timeout */
+  String heartbeat() default "-PT1S";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
 

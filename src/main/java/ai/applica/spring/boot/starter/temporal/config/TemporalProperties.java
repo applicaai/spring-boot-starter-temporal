@@ -74,6 +74,7 @@ public class TemporalProperties {
     private Duration scheduleToCloseTimeout;
     private Duration scheduleToStartTimeout;
     private Duration startToCloseTimeout;
+    private Duration heartbeatTimeout;
   }
 
   public Map<String, WorkflowOption> getWorkflows() {

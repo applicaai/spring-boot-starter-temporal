@@ -149,10 +149,12 @@ public class HelloActivityAnnotation {
       ActivityInfo info = Activity.getExecutionContext().getInfo();
       Duration startToCloseTimeout = info.getStartToCloseTimeout();
       Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
+      Duration heartbeatTimeout = info.getHeartbeatTimeout();
 
       Map<String, Duration> map = new HashMap<>();
       map.put(TestConstants.START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
       map.put(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      map.put(TestConstants.HEARTBEAT_TIMEOUT_KEY, heartbeatTimeout);
       return map;
     }
   }
@@ -164,8 +166,9 @@ public class HelloActivityAnnotation {
     @ActivityStub(
         duration = 3,
         durationUnits = "MINUTES",
-        scheduleToClose = "PT4S",
-        startToClose = "PT2S")
+        scheduleToClose = "PT30S",
+        startToClose = "PT8S",
+        heartbeat = "PT2S")
     private TimeoutActivity activity;
 
     @Override
