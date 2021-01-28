@@ -80,16 +80,8 @@ options both for worker and its stubs:
 ```
 
 Then for every activity in workflow implementation class instead of 
-Activity stub instantiation you annotate it with `@ActivityStub`:
+Activity stub instantiation you annotate it with `@ActivityStub`.
 
-```java
-@ActivityStub(duration = "PT10S")
-public SomeActivity someActivity;
-```
-
-Activity duration has ISO 8601 format
-
-There is a duration parameter that's setting `StartToCloseTimeout` on stub.
 Or you can use:
 ```yaml
   activityStubDefaults:
@@ -109,6 +101,23 @@ Or you can use:
       startToCloseTimeout: PT100H
       scheduleToCloseTimeout: PT1M
 ```
+
+### @ActivityStub
+
+```java
+@ActivityStub(startToClose = "PT10S")
+public SomeActivity someActivity;
+```
+
+Since `0.7.0-SNAPSHOT` `duration` and `durationUnits` properties are deprecated.
+
+Instead, please use one of:
+- `scheduleToClose`
+- `scheduleToStart`
+- `startToClose`
+- `heartbeat`
+
+These are temporal equivalents of timeout properties. Their values are in Java duration format.
 
 ### Defining activities
 The only thing you need is for the activity to be a Spring Boot `@Service`.

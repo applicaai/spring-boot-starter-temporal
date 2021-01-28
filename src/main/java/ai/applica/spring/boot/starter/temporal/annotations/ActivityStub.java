@@ -35,7 +35,7 @@ public @interface ActivityStub {
   /**
    * Sets temporal scheduleToCloseTimeout
    *
-   * @deprecated as of 1.7.0 - will be removed in next minor version
+   * @deprecated as of 1.7.0 - will be removed in one of next minor version
    *     <p>Use {@link ActivityStub(scheduleToClose)} or {@link ActivityStub(startToClose)} instead.
    */
   @Deprecated
