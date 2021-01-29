@@ -24,21 +24,21 @@ import io.temporal.client.WorkflowOptions;
 public interface TemporalOptionsConfiguration {
 
   /**
-   * Modify options or just pass them throu.
+   * Modify options or just pass them through.
    *
    * @param newBuilder
    * @return
    */
   WorkflowClientOptions.Builder modifyClientOptions(WorkflowClientOptions.Builder newBuilder);
   /**
-   * Modify options or just pass them throu.
+   * Modify options or just pass them through.
    *
    * @param newBuilder
    * @return
    */
   WorkflowOptions.Builder modifyDefaultStubOptions(WorkflowOptions.Builder newBuilder);
   /**
-   * Modify options or just pass them throu.
+   * Modify options or just pass them through.
    *
    * @param newBuilder
    * @return

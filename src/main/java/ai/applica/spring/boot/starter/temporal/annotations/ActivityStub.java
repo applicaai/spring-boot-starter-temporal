@@ -23,16 +23,38 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * To mark activiti on a Workflow to make it a stub. One must specify duration and can specify
- * duration unit being ChronoUnit string equivalent.
+ * To mark activity on a Workflow to make it a stub. It tells how long can activity take from start
+ * to close. If activity takes longer, then timeout exception is thrown.
+ *
+ * <p>One must specify duration string according to java.time.Duration format.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface ActivityStub {
 
+  /**
+   * Sets temporal scheduleToCloseTimeout
+   *
+   * @deprecated as of 1.7.0 - will be removed in one of next minor version
+   *     <p>Use {@link ActivityStub(scheduleToClose)} or {@link ActivityStub(startToClose)} instead.
+   */
+  @Deprecated
   long duration() default -1;
 
+  @Deprecated
   String durationUnits() default "SECONDS";
+
+  /** Equivalent to Temporal's scheduleToClose */
+  String scheduleToClose() default "-PT1S";
+
+  /** Equivalent to Temporal's scheduleToStart */
+  String scheduleToStart() default "-PT1S";
+
+  /** Equivalent to Temporal's scheduleToClose */
+  String startToClose() default "-PT1S";
+
+  /** Equivalent to Temporal's heartbeat timeout */
+  String heartbeat() default "-PT1S";
 
   RetryActivityOptions retryOptions() default @RetryActivityOptions;
 

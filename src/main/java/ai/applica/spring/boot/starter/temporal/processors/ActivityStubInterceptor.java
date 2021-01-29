@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class ActivityStubInterceptor {
+  private static final String DEFAULT_DURATION = "-PT1S";
   private final Class<?> targetClass;
   private final TemporalOptionsConfiguration temporalOptionsConfiguration;
   private final TemporalProperties temporalProperties;
@@ -94,26 +95,21 @@ public class ActivityStubInterceptor {
 
     // Build default options
     Builder options = ActivityOptions.newBuilder();
+
     if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
       options.setTaskQueue(activityStubAnnotation.taskQueue());
     }
     // from configuration
     if (temporalProperties.getActivityStubDefaults() != null) {
       ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
-      options.setScheduleToCloseTimeout(
-          Duration.of(
-              activityStubDefaults.getScheduleToCloseTimeout(),
-              ChronoUnit.valueOf(activityStubDefaults.getScheduleToCloseTimeoutUnit())));
+      setupTimeoutsActivityStubOptions(options, activityStubDefaults);
     }
 
-    // from default method
     options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
-    if (activityStubAnnotation.duration() != -1) {
-      options.setScheduleToCloseTimeout(
-          Duration.of(
-              activityStubAnnotation.duration(),
-              ChronoUnit.valueOf(activityStubAnnotation.durationUnits())));
-    }
+    // from deprecated property
+    setupTimeoutFromDeprecatedProperty(activityStubAnnotation, options);
+    // from annotation properties
+    setupTimeoutsFromAnnotation(options, activityStubAnnotation);
 
     if (nonDefaultRetryOptions(activityStubAnnotation.retryOptions())) {
       options.setRetryOptions(mergeRetryOptions(activityStubAnnotation.retryOptions(), options));
@@ -128,13 +124,10 @@ public class ActivityStubInterceptor {
       ActivityStubOptions applicableOptions =
           stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
       if (applicableOptions != null) {
+        setupTimeoutsActivityStubOptions(options, applicableOptions);
         if (applicableOptions.getTaskQueue() != null) {
           options.setTaskQueue(applicableOptions.getTaskQueue());
         }
-        options.setScheduleToCloseTimeout(
-            Duration.of(
-                applicableOptions.getScheduleToCloseTimeout(),
-                ChronoUnit.valueOf(applicableOptions.getScheduleToCloseTimeoutUnit())));
       }
     }
     // chk for modifier
@@ -156,9 +149,63 @@ public class ActivityStubInterceptor {
       }
     } else {
       log.debug(
-          "Not options modifier method found for {} on object {}", field.getName(), targetClass);
+          "No options modifier method found for {} on object {}", field.getName(), targetClass);
     }
     return options.build();
+  }
+
+  private void setupTimeoutFromDeprecatedProperty(
+      ActivityStub activityStubAnnotation, Builder options) {
+    if (activityStubAnnotation.duration() != -1) {
+      options.setScheduleToCloseTimeout(
+          Duration.of(
+              activityStubAnnotation.duration(),
+              ChronoUnit.valueOf(activityStubAnnotation.durationUnits())));
+    }
+  }
+
+  private void setupTimeoutsFromAnnotation(Builder options, ActivityStub activityStub) {
+    String scheduleToClose = activityStub.scheduleToClose();
+    if (!DEFAULT_DURATION.equals(scheduleToClose)) {
+      options.setScheduleToCloseTimeout(Duration.parse(scheduleToClose));
+    }
+    String startToClose = activityStub.startToClose();
+    if (!DEFAULT_DURATION.equals(startToClose)) {
+      options.setStartToCloseTimeout(Duration.parse(startToClose));
+    }
+    String scheduleToStartTimeout = activityStub.scheduleToStart();
+    if (!DEFAULT_DURATION.equals(scheduleToStartTimeout)) {
+      options.setScheduleToStartTimeout(Duration.parse(scheduleToStartTimeout));
+    }
+    String heartbeatTimeout = activityStub.heartbeat();
+    if (!DEFAULT_DURATION.equals(heartbeatTimeout)) {
+      options.setHeartbeatTimeout(Duration.parse(heartbeatTimeout));
+    }
+  }
+
+  private void setupTimeoutsActivityStubOptions(
+      Builder options, ActivityStubOptions activityStubAnnotation) {
+
+    Duration scheduleToCloseTimeout = activityStubAnnotation.getScheduleToCloseTimeout();
+    if (scheduleToCloseTimeout != null) {
+      if (!DEFAULT_DURATION.equals(scheduleToCloseTimeout.toString())) {
+        options.setScheduleToCloseTimeout(scheduleToCloseTimeout);
+      }
+    }
+
+    Duration startToCloseTimeout = activityStubAnnotation.getStartToCloseTimeout();
+    if (startToCloseTimeout != null) {
+      if (!DEFAULT_DURATION.equals(startToCloseTimeout.toString())) {
+        options.setStartToCloseTimeout(startToCloseTimeout);
+      }
+    }
+
+    Duration scheduleToStartTimeout = activityStubAnnotation.getScheduleToStartTimeout();
+    if (scheduleToStartTimeout != null) {
+      if (!DEFAULT_DURATION.equals(scheduleToStartTimeout.toString())) {
+        options.setScheduleToStartTimeout(scheduleToStartTimeout);
+      }
+    }
   }
 
   private RetryOptions mergeRetryOptions(

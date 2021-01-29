@@ -21,14 +21,20 @@
 
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
+import static ai.applica.spring.boot.starter.temporal.samples.TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY;
+import static ai.applica.spring.boot.starter.temporal.samples.TestConstants.START_TO_CLOSE_TIMEOUT_KEY;
+
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityInfo;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -37,33 +43,14 @@ import org.springframework.stereotype.Service;
  * Temporal service to be running.
  */
 public class HelloProperties {
-
   static final String TASK_QUEUE = "HelloProperties";
 
-  /** Workflow interface has to have at least one method annotated with @WorkflowMethod. */
   @WorkflowInterface
   public interface PropertiesWorkflow {
-    /** @return activity timeout value */
     @WorkflowMethod
-    Duration getTimeout();
+    Map<String, Duration> getTimeouts();
   }
 
-  /** Workflow interface has to have at least one method annotated with @WorkflowMethod. */
-  @WorkflowInterface
-  public interface PropertiesDotWorkflow {
-    /** @return activity timeout value */
-    @WorkflowMethod
-    Duration getTimeout();
-  }
-
-  /** Activity interface is just a POJI. */
-  @ActivityInterface
-  public interface PropertiesActivity {
-    @ActivityMethod
-    Duration getTimeout();
-  }
-
-  /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class PropertiesWorkflowImpl implements PropertiesWorkflow {
@@ -71,12 +58,18 @@ public class HelloProperties {
     @ActivityStub private PropertiesActivity activity;
 
     @Override
-    public Duration getTimeout() {
-      return activity.getTimeout();
+    public Map<String, Duration> getTimeouts() {
+      return activity.getTimeouts();
     }
   }
 
-  /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
+  @WorkflowInterface
+  public interface PropertiesDotWorkflow {
+
+    @WorkflowMethod
+    Map<String, Duration> getTimeouts();
+  }
+
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class PropertiesDotWorkflowImpl implements PropertiesDotWorkflow {
@@ -84,17 +77,70 @@ public class HelloProperties {
     @ActivityStub private PropertiesActivity activity;
 
     @Override
-    public Duration getTimeout() {
-      return activity.getTimeout();
+    public Map<String, Duration> getTimeouts() {
+      return activity.getTimeouts();
     }
+  }
+
+  @ActivityInterface
+  public interface PropertiesActivity {
+    @ActivityMethod
+    Map<String, Duration> getTimeouts();
   }
 
   @Service
   static class PropertiesActivityImpl implements PropertiesActivity {
 
     @Override
-    public Duration getTimeout() {
-      return Activity.getExecutionContext().getInfo().getScheduleToCloseTimeout();
+    public Map<String, Duration> getTimeouts() {
+      ActivityInfo info = Activity.getExecutionContext().getInfo();
+      Duration startToCloseTimeout = info.getStartToCloseTimeout();
+      Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
+
+      Map<String, Duration> map = new HashMap<>();
+      map.put(START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
+      map.put(SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      return map;
+    }
+  }
+
+  @WorkflowInterface
+  public interface PropertiesTimeoutWorkflow {
+    @WorkflowMethod
+    Map<String, Duration> getTimeouts();
+  }
+
+  @Component
+  @TemporalWorkflow(TASK_QUEUE)
+  public static class PropertiesTimeoutWorkflowImpl implements PropertiesTimeoutWorkflow {
+
+    @ActivityStub private TimeoutPropertiesActivity activity;
+
+    @Override
+    public Map<String, Duration> getTimeouts() {
+      return activity.getTimeouts();
+    }
+  }
+
+  @ActivityInterface
+  public interface TimeoutPropertiesActivity {
+    @ActivityMethod
+    Map<String, Duration> getTimeouts();
+  }
+
+  @Service
+  static class TimeoutPropertiesActivityImpl implements TimeoutPropertiesActivity {
+
+    @Override
+    public Map<String, Duration> getTimeouts() {
+      ActivityInfo info = Activity.getExecutionContext().getInfo();
+      Duration startToCloseTimeout = info.getStartToCloseTimeout();
+      Duration scheduleToCloseTimeout = info.getScheduleToCloseTimeout();
+
+      Map<String, Duration> map = new HashMap<>();
+      map.put(START_TO_CLOSE_TIMEOUT_KEY, startToCloseTimeout);
+      map.put(SCHEDULE_TO_CLOSE_TIMEOUT_KEY, scheduleToCloseTimeout);
+      return map;
     }
   }
 }
