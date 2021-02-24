@@ -17,6 +17,17 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.7.0-SNAPSHOT
     <version>0.7.0-SNAPSHOT</version>
 </dependency>
 ```
+
+```maven
+<repository>
+    <id>oss-repo</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+    </snapshots>
+</repository>
+```
 ## Usage
 
 Instead of reading this README you can see examples in test directory `samples` folder.
