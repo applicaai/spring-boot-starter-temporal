@@ -18,6 +18,7 @@
 package ai.applica.spring.boot.starter.temporal.config;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.processors.ActivityAnnotationBeanPostProcessor;
 import ai.applica.spring.boot.starter.temporal.processors.WorkflowAnnotationBeanPostProcessor;
 import io.grpc.ManagedChannelBuilder;
 import io.temporal.client.ActivityCompletionClient;
@@ -34,7 +35,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @EnableConfigurationProperties(TemporalProperties.class)
-@Import(WorkflowAnnotationBeanPostProcessor.class)
+@Import({WorkflowAnnotationBeanPostProcessor.class, ActivityAnnotationBeanPostProcessor.class})
 @RequiredArgsConstructor
 public class TemporalBootstrapConfiguration {
 
