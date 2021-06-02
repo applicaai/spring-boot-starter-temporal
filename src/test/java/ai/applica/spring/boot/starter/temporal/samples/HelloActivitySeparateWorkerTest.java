@@ -21,28 +21,26 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker.GreetingSeparateWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker.GreetingWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivitySepareteWorker}. Doesn't use an external Temporal service. */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @TemporalTest
-public class HelloActivitySeparateWorkerTest {
+class HelloActivitySeparateWorkerTest {
 
   static final String ACTIVITY_TASK_QUEUE = "HelloActivitySepareteWorkerActivity";
 
@@ -52,7 +50,7 @@ public class HelloActivitySeparateWorkerTest {
   @Autowired WorkflowFactory fact;
   @Autowired GreetingActivities greatActivity;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
@@ -65,13 +63,13 @@ public class HelloActivitySeparateWorkerTest {
             testEnv.getWorkflowClient());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void testActivityImpl() {
+  void testActivityImpl() {
     Worker activityWorker = testEnv.newWorker(ACTIVITY_TASK_QUEUE);
     activityWorker.registerActivitiesImplementations(greatActivity);
     testEnv.start();

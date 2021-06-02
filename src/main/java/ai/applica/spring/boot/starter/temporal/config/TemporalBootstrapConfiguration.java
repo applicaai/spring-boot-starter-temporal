@@ -17,7 +17,10 @@
 
 package ai.applica.spring.boot.starter.temporal.config;
 
+import static java.util.Optional.ofNullable;
+
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.config.TemporalProperties.WorkflowServiceStubOptions;
 import ai.applica.spring.boot.starter.temporal.processors.ActivityAnnotationBeanPostProcessor;
 import ai.applica.spring.boot.starter.temporal.processors.WorkflowAnnotationBeanPostProcessor;
 import io.grpc.ManagedChannelBuilder;
@@ -71,17 +74,46 @@ public class TemporalBootstrapConfiguration {
         channel.usePlaintext();
       }
       WorkflowServiceStubsOptions options =
-          WorkflowServiceStubsOptions.newBuilder()
-              .setChannel(channel.build())
-              .setEnableHttps(temporalProperties.getUseSsl())
-              .build();
+          mapWorkflowServiceStubsOptions(channel, temporalProperties);
       service = WorkflowServiceStubs.newInstance(options);
     } else {
       // Get the default connection for the local docker
-      service = WorkflowServiceStubs.newInstance();
+      service =
+          WorkflowServiceStubs.newInstance(
+              WorkflowServiceStubsOptions.newBuilder()
+                  .setDisableHealthCheck(true)
+                  .setEnableKeepAlive(false)
+                  .build());
     }
     WorkflowClientOptions.Builder optionsBuilder =
         temporalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
     return WorkflowClient.newInstance(service, optionsBuilder.build());
+  }
+
+  private WorkflowServiceStubsOptions mapWorkflowServiceStubsOptions(
+      ManagedChannelBuilder<?> channel, TemporalProperties temporalProperties) {
+    WorkflowServiceStubsOptions.Builder builder =
+        WorkflowServiceStubsOptions.newBuilder()
+            .setChannel(channel.build())
+            .setEnableHttps(temporalProperties.getUseSsl());
+    WorkflowServiceStubOptions options = temporalProperties.getWorkflowServiceStubOptions();
+    if (options != null) {
+      ofNullable(options.getDisableHealthCheck()).ifPresent(builder::setDisableHealthCheck);
+      ofNullable(options.getHealthCheckAttemptTimeout())
+          .ifPresent(builder::setHealthCheckAttemptTimeout);
+      ofNullable(options.getHealthCheckTimeout()).ifPresent(builder::setHealthCheckTimeout);
+      ofNullable(options.getEnableKeepAlive()).ifPresent(builder::setEnableKeepAlive);
+      ofNullable(options.getKeepAliveTime()).ifPresent(builder::setKeepAliveTime);
+      ofNullable(options.getKeepAliveTimeout()).ifPresent(builder::setKeepAliveTimeout);
+      ofNullable(options.getKeepAlivePermitWithoutStream())
+          .ifPresent(builder::setKeepAlivePermitWithoutStream);
+      ofNullable(options.getRpcLongPollTimeout()).ifPresent(builder::setRpcLongPollTimeout);
+      ofNullable(options.getRpcQueryTimeout()).ifPresent(builder::setRpcQueryTimeout);
+      ofNullable(options.getRpcTimeout()).ifPresent(builder::setRpcTimeout);
+      ofNullable(options.getConnectionBackoffResetFrequency())
+          .ifPresent(builder::setConnectionBackoffResetFrequency);
+      ofNullable(options.getGrpcReconnectFrequency()).ifPresent(builder::setGrpcReconnectFrequency);
+    }
+    return builder.build();
   }
 }

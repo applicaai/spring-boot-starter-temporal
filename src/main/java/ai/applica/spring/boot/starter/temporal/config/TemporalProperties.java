@@ -48,6 +48,8 @@ public class TemporalProperties {
 
   private Map<String, ActivityStubOptions> activityStubs;
 
+  private WorkflowServiceStubOptions workflowServiceStubOptions;
+
   private boolean addedDefaultsToWorkflows = false;
 
   private boolean addedDefaultsToActivities = false;
@@ -65,6 +67,27 @@ public class TemporalProperties {
     private Integer activityPoolSize;
 
     private Integer workflowPoolSize;
+  }
+
+  /**
+   * Options passed to WorkflowServiceStubsOptions Please notice, not all of the options are exposed
+   * here
+   */
+  @Data
+  @NoArgsConstructor
+  public static class WorkflowServiceStubOptions {
+    private Boolean disableHealthCheck;
+    private Duration healthCheckAttemptTimeout;
+    private Duration healthCheckTimeout;
+    private Boolean enableKeepAlive;
+    private Duration keepAliveTime;
+    private Duration keepAliveTimeout;
+    private Boolean keepAlivePermitWithoutStream;
+    private Duration rpcLongPollTimeout;
+    private Duration rpcQueryTimeout;
+    private Duration rpcTimeout;
+    private Duration connectionBackoffResetFrequency;
+    private Duration grpcReconnectFrequency;
   }
 
   @Data

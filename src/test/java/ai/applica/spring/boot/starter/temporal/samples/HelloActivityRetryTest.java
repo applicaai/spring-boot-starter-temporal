@@ -21,57 +21,47 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivityRetry}. Doesn't use an external Temporal service. */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @TemporalTest
-public class HelloActivityRetryTest {
-
-  /** Prints a history of the workflow under test in case of a test failure. */
-  @Rule
-  public TestWatcher watchman =
-      new TestWatcher() {
-        @Override
-        protected void failed(Throwable e, Description description) {
-          if (testEnv != null) {
-            System.err.println(testEnv.getDiagnostics());
-            testEnv.close();
-          }
-        }
-      };
+class HelloActivityRetryTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
   GreetingWorkflow workflow;
 
+  @RegisterExtension TemporalTestWatcher temporalTestWatcher = new TemporalTestWatcher();
   @Autowired WorkflowFactory fact;
   @Autowired GreetingActivities greatActivity;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
+    temporalTestWatcher.setEnvironment(testEnv);
     worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
 
     // Get a workflow stub using the same task queue the worker uses.
@@ -80,23 +70,24 @@ public class HelloActivityRetryTest {
             GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void testActivityImpl() {
+  void testActivityImpl() {
     worker.registerActivitiesImplementations(greatActivity);
     testEnv.start();
 
     // Execute a workflow waiting for it to complete.
     String greeting = workflow.getGreeting("World");
-    assertEquals("Hello World!", greeting);
+    assertThat(greeting).isEqualTo("Hello World!");
   }
 
-  @Test(timeout = 1000)
-  public void testMockedActivity() {
+  @Test
+  @Timeout(1)
+  void testMockedActivity() {
     GreetingActivities activities = mock(GreetingActivities.class);
     when(activities.composeGreeting("Hello", "World"))
         .thenThrow(
@@ -109,7 +100,7 @@ public class HelloActivityRetryTest {
 
     // Execute a workflow waiting for it to complete.
     String greeting = workflow.getGreeting("World");
-    assertEquals("Hello World!", greeting);
+    assertThat(greeting).isEqualTo("Hello World!");
 
     verify(activities, times(4)).composeGreeting(anyString(), anyString());
   }
