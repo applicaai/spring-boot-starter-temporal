@@ -24,6 +24,7 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflowImpl;
@@ -32,7 +33,6 @@ import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.Prop
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflowImpl;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.TimeoutPropertiesActivity;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;

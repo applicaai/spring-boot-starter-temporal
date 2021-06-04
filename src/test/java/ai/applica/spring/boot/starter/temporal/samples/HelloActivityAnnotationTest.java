@@ -31,10 +31,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingActivities;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.api.enums.v1.RetryState;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.failure.ActivityFailure;

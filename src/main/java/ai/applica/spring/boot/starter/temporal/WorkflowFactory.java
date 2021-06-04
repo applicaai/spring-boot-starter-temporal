@@ -121,7 +121,6 @@ public class WorkflowFactory {
                     ChronoUnit.valueOf(option.getExecutionTimeoutUnit())));
     return temporalOptionsConfiguration.modifyDefaultStubOptions(builder);
   }
-
   /**
    * Prepares option builder based on workflow class annotation and spring properties. Test version
    * of makeStub method.
@@ -139,7 +138,6 @@ public class WorkflowFactory {
     Builder optionsBuilder = defaultOptionsBuilder(workflowClass);
     return makeStub(workflowInterface, optionsBuilder, testWorkflowClient);
   }
-
   /**
    * Builds workflow stub similary to <code>WorkflowClient#newWorkflowStub</code> but with options
    * taken from properties by name given. Test version of makeStub method.
@@ -175,7 +173,33 @@ public class WorkflowFactory {
     return stub;
   }
   /**
-   * /** Test version of making worker classes to be used with <code>
+   * Test version of making workers. On production it is done automaticly. Remember not to use
+   * uprocessed classes that are not beans and will not work or not work properly.
+   *
+   * @param testEnv
+   * @param targetClasses
+   * @return
+   */
+  public Worker makeWorker(TestWorkflowEnvironment testEnv, Class<?>... targetClasses) {
+    String taskQueue = null;
+    Class<?>[] types = new Class<?>[targetClasses.length];
+    int i = 0;
+    for (Class<?> targetClass : targetClasses) {
+      TemporalWorkflow workflowAnotation =
+          AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
+      WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
+      if (option == null) {
+        throw new RuntimeException("No properties specitied for " + workflowAnotation.value());
+      }
+      taskQueue = option.getTaskQueue();
+      types[i++] = makeWorkflowClass(targetClass);
+    }
+    Worker worker = testEnv.newWorker(taskQueue);
+    worker.registerWorkflowImplementationTypes(types);
+    return worker;
+  }
+  /**
+   * Test version of making worker classes to be used with <code>
    * Worker#addWorkflowImplementationFactory</code>. As to provide some partial mocking or somthing
    * similar. Remember not to use uprocessed classes that are not beans and will not work or not
    * work properly.
@@ -204,32 +228,5 @@ public class WorkflowFactory {
             .make();
     Loaded<?> beanL = beanU.load(targetClass.getClassLoader());
     return beanL.getLoaded();
-  }
-
-  /**
-   * Test version of making workers. On production it is done automaticly. Remember not to use
-   * uprocessed classes that are not beans and will not work or not work properly.
-   *
-   * @param testEnv
-   * @param targetClasses
-   * @return
-   */
-  public Worker makeWorker(TestWorkflowEnvironment testEnv, Class<?>... targetClasses) {
-    String taskQueue = null;
-    Class<?>[] types = new Class<?>[targetClasses.length];
-    int i = 0;
-    for (Class<?> targetClass : targetClasses) {
-      TemporalWorkflow workflowAnotation =
-          AnnotationUtils.findAnnotation(targetClass, TemporalWorkflow.class);
-      WorkflowOption option = temporalProperties.getWorkflows().get(workflowAnotation.value());
-      if (option == null) {
-        throw new RuntimeException("No properties specitied for " + workflowAnotation.value());
-      }
-      taskQueue = option.getTaskQueue();
-      types[i++] = makeWorkflowClass(targetClass);
-    }
-    Worker worker = testEnv.newWorker(taskQueue);
-    worker.registerWorkflowImplementationTypes(types);
-    return worker;
   }
 }

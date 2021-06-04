@@ -28,13 +28,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChildImpl;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingWorkflowImpl;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.util.concurrent.atomic.AtomicReference;

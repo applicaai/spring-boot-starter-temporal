@@ -24,11 +24,11 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflowImpl;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.testing.TestWorkflowEnvironment;
 import java.time.Duration;

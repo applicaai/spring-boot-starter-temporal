@@ -26,6 +26,8 @@ import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import io.temporal.failure.ApplicationFailure;
+import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class HelloActivity {
     /** @return greeting string */
     @WorkflowMethod
     String getGreeting(String name);
+
+    @QueryMethod
+    String getStatus();
   }
 
   /** Activity interface is just a POJI. */
@@ -62,6 +67,8 @@ public class HelloActivity {
   @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
 
+    private String status = "STARTED";
+
     /**
      * Activity stub implements activity interface and proxies calls to it to Temporal activity
      * invocations. Because activities are reentrant, only a single stub can be used for multiple
@@ -72,7 +79,14 @@ public class HelloActivity {
     @Override
     public String getGreeting(String name) {
       // This is a blocking call that returns only after the activity has completed.
-      return activities.composeGreeting("Hello", name);
+      String result = activities.composeGreeting("Hello", name);
+      status = "FINISHED";
+      return result;
+    }
+
+    @Override
+    public String getStatus() {
+      return status;
     }
   }
 
@@ -90,7 +104,9 @@ public class HelloActivity {
 
     @Override
     public String composeGreeting(String greeting, String name) {
-      return greeting + " " + name + simpleExclamationBean.getExclamation();
+      throw ApplicationFailure.newNonRetryableFailure("Test exception", "failure");
+
+      // return greeting + " " + name + simpleExclamationBean.getExclamation();
     }
   }
   // FIXME

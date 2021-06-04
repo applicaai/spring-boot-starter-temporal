@@ -29,12 +29,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingWorkflowImpl;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import org.junit.jupiter.api.AfterEach;

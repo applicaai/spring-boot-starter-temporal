@@ -21,17 +21,20 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflowImpl;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import io.temporal.client.WorkflowFailedException;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import org.junit.jupiter.api.AfterEach;
@@ -45,12 +48,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TemporalTest
 class HelloActivityTest {
 
-  private TestWorkflowEnvironment testEnv;
-  private Worker worker;
   GreetingWorkflow workflow;
-
   @Autowired WorkflowFactory fact;
   @Autowired GreetingActivities greatActivity;
+  private TestWorkflowEnvironment testEnv;
+  private Worker worker;
 
   @BeforeEach
   public void setUp() {
@@ -76,6 +78,24 @@ class HelloActivityTest {
     // Execute a workflow waiting for it to complete.
     String greeting = workflow.getGreeting("World");
     assertEquals("Hello World!", greeting);
+  }
+
+  @Test
+  void shouldRespondToQueryWhenWorkflowIsTerminated() {
+    worker.registerActivitiesImplementations(greatActivity);
+    testEnv.start();
+
+    // Execute a workflow waiting for it to complete.
+    assertThatThrownBy(() -> workflow.getGreeting("World"))
+        .isInstanceOfSatisfying(
+            WorkflowFailedException.class,
+            exception ->
+                assertThat(exception.getCause().getCause().getMessage())
+                    .isEqualTo("message='Test exception', type='failure', nonRetryable=true"));
+
+    String status = workflow.getStatus();
+
+    assertThat(status).isEqualTo("FINISHED");
   }
 
   @Test
