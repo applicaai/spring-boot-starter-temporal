@@ -22,7 +22,6 @@
 package ai.applica.spring.boot.starter.temporal.samples;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,17 +33,17 @@ import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflowImpl;
-import io.temporal.client.WorkflowFailedException;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
-@SpringBootTest
+@SpringBootTest(properties = {"spring.temporal.workflowDefaults.executionTimeout=3"})
 @TemporalTest
 class HelloActivityTest {
 
@@ -81,21 +80,22 @@ class HelloActivityTest {
   }
 
   @Test
+  @Disabled
+  // The test is failing because it reproduces the issue in temporal.io java sdk
+  // https://github.com/temporalio/sdk-java/issues/391
   void shouldRespondToQueryWhenWorkflowIsTerminated() {
     worker.registerActivitiesImplementations(greatActivity);
     testEnv.start();
 
     // Execute a workflow waiting for it to complete.
-    assertThatThrownBy(() -> workflow.getGreeting("World"))
-        .isInstanceOfSatisfying(
-            WorkflowFailedException.class,
-            exception ->
-                assertThat(exception.getCause().getCause().getMessage())
-                    .isEqualTo("message='Test exception', type='failure', nonRetryable=true"));
+    try {
+      workflow.getGreeting("SLEEP");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     String status = workflow.getStatus();
-
-    assertThat(status).isEqualTo("FINISHED");
+    assertThat(status).isEqualTo("SLEEPING");
   }
 
   @Test

@@ -21,12 +21,13 @@
 
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import io.temporal.failure.ApplicationFailure;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
@@ -60,6 +61,9 @@ public class HelloActivity {
   public interface GreetingActivities {
     @ActivityMethod
     String composeGreeting(String greeting, String name);
+
+    @ActivityMethod
+    void sleepFor10Seconds();
   }
 
   /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
@@ -79,9 +83,16 @@ public class HelloActivity {
     @Override
     public String getGreeting(String name) {
       // This is a blocking call that returns only after the activity has completed.
-      String result = activities.composeGreeting("Hello", name);
-      status = "FINISHED";
-      return result;
+      if ("SLEEP".equals(name)) {
+        status = "SLEEPING";
+        activities.sleepFor10Seconds();
+        status = "SLEPT";
+        return "SLEPT";
+      } else {
+        String result = activities.composeGreeting("Hello", name);
+        status = "FINISHED";
+        return result;
+      }
     }
 
     @Override
@@ -104,11 +115,19 @@ public class HelloActivity {
 
     @Override
     public String composeGreeting(String greeting, String name) {
-      throw ApplicationFailure.newNonRetryableFailure("Test exception", "failure");
+      return greeting + " " + name + simpleExclamationBean.getExclamation();
+    }
 
-      // return greeting + " " + name + simpleExclamationBean.getExclamation();
+    @Override
+    public void sleepFor10Seconds() {
+      try {
+        SECONDS.sleep(10);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
+
   // FIXME
   // @EnableTemporal
   // @SpringBootApplication
