@@ -57,8 +57,8 @@ public class TemporalBootstrapConfiguration {
   }
 
   @Bean
-  public WorkerFactory defaultWorkerFactory(TemporalProperties temporalProperties) {
-    return WorkerFactory.newInstance(defaultClient(temporalProperties));
+  public WorkerFactory defaultWorkerFactory(WorkflowClient workflowClient) {
+    return WorkerFactory.newInstance(workflowClient);
   }
 
   @Bean
@@ -66,7 +66,7 @@ public class TemporalBootstrapConfiguration {
     WorkflowServiceStubs service;
     // Get worker to poll the common task queue.
     // gRPC stubs wrapper that talks to the local docker instance of temporal service.
-    if (temporalProperties.getHost() != null) {
+    if (hostAndPortAreSet(temporalProperties)) {
       ManagedChannelBuilder<?> channel =
           ManagedChannelBuilder.forAddress(
               temporalProperties.getHost(), temporalProperties.getPort());
@@ -88,6 +88,12 @@ public class TemporalBootstrapConfiguration {
     WorkflowClientOptions.Builder optionsBuilder =
         temporalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
     return WorkflowClient.newInstance(service, optionsBuilder.build());
+  }
+
+  private boolean hostAndPortAreSet(TemporalProperties temporalProperties) {
+    return temporalProperties.getHost() != null
+        && !temporalProperties.getHost().isEmpty()
+        && temporalProperties.getPort() != null;
   }
 
   private WorkflowServiceStubsOptions mapWorkflowServiceStubsOptions(
