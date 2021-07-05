@@ -37,13 +37,12 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
-@SpringBootTest(properties = {"spring.temporal.workflowDefaults.executionTimeout=3"})
+@SpringBootTest(properties = {"spring.temporal.workflowDefaults.executionTimeout=9"})
 @TemporalTest
 class HelloActivityTest {
 
@@ -80,7 +79,6 @@ class HelloActivityTest {
   }
 
   @Test
-  @Disabled
   // The test is failing because it reproduces the issue in temporal.io java sdk
   // https://github.com/temporalio/sdk-java/issues/391
   void shouldRespondToQueryWhenWorkflowIsTerminated() {
