@@ -21,10 +21,11 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingActivitiesImpl;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloAsyncActivityCompletion.GreetingWorkflow;
@@ -35,38 +36,21 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.rules.Timeout;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloAsyncActivityCompletion}. Doesn't use an external Temporal service. */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @TemporalTest
-public class HelloAsyncActivityCompletionTest {
-
-  @Rule public Timeout globalTimeout = Timeout.seconds(2);
+class HelloAsyncActivityCompletionTest {
 
   /** Prints a history of the workflow under test in case of a test failure. */
-  @Rule
-  public TestWatcher watchman =
-      new TestWatcher() {
-        @Override
-        protected void failed(Throwable e, Description description) {
-          if (testEnv != null) {
-            System.err.println(testEnv.getDiagnostics());
-            testEnv.close();
-          }
-        }
-      };
+  @RegisterExtension TemporalTestWatcher temporalTestWatcher = new TemporalTestWatcher();
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
@@ -74,24 +58,25 @@ public class HelloAsyncActivityCompletionTest {
   private WorkflowClient client;
 
   private @Autowired WorkflowFactory fact;
-  // // private @Autowired GreetingActivities activities;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
+    temporalTestWatcher.setEnvironment(testEnv);
     worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
     client = testEnv.getWorkflowClient();
 
     workflow = fact.makeStub(GreetingWorkflow.class, GreetingWorkflowImpl.class, client);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void testActivityImpl() throws ExecutionException, InterruptedException {
+  @Timeout(2)
+  void testActivityImpl() throws ExecutionException, InterruptedException {
     ActivityCompletionClient completionClient = client.newActivityCompletionClient();
     GreetingActivitiesImpl greetingActivitiesImpl = new GreetingActivitiesImpl();
     greetingActivitiesImpl.setCompletionClient(completionClient);

@@ -23,21 +23,25 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot:2.3.1.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-autoconfigure:2.3.1.RELEASE'
-    implementation 'io.temporal:temporal-sdk:1.0.4'
-    
-	implementation 'org.springframework.boot:spring-boot-starter-test:2.3.1.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot', version: "${bootVersion}"
+    implementation group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: "${bootVersion}"
+    implementation group: 'io.temporal', name: 'temporal-sdk', version: "${temporalVersion}"
+    implementation(group: 'io.temporal', name: 'temporal-testing', version: "${temporalVersion}") {
+        exclude module: 'slf4j-simple'
+    }
+
     implementation 'org.springframework:spring-aspects:5.2.7.RELEASE'
+    implementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.11.0'
     compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
-	
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "${bootVersion}"
     testCompileOnly 'org.projectlombok:lombok:1.18.12'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
 group = 'com.github.applicaai'
-version = '0.7.1-SNAPSHOT'
+version = '0.8.0-SNAPSHOT'
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -72,6 +76,13 @@ tasks.withType(JavaCompile) {
 task execute(type: JavaExec) {
     main = findProperty("mainClass") ?: ""
     classpath sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 license {

@@ -21,40 +21,38 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflowImpl;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.temporal.workflowDefaults.executionTimeout=9"})
 @TemporalTest
-public class HelloActivityTest {
+class HelloActivityTest {
 
-  private TestWorkflowEnvironment testEnv;
-  private Worker worker;
   GreetingWorkflow workflow;
-
   @Autowired WorkflowFactory fact;
   @Autowired GreetingActivities greatActivity;
+  private TestWorkflowEnvironment testEnv;
+  private Worker worker;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
@@ -65,13 +63,13 @@ public class HelloActivityTest {
             GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void testActivityImpl() {
+  void testActivityImpl() {
     worker.registerActivitiesImplementations(greatActivity);
     testEnv.start();
 
@@ -81,7 +79,25 @@ public class HelloActivityTest {
   }
 
   @Test
-  public void testMockedActivity() {
+  // The test is failing because it reproduces the issue in temporal.io java sdk
+  // https://github.com/temporalio/sdk-java/issues/391
+  void shouldRespondToQueryWhenWorkflowIsTerminated() {
+    worker.registerActivitiesImplementations(greatActivity);
+    testEnv.start();
+
+    // Execute a workflow waiting for it to complete.
+    try {
+      workflow.getGreeting("SLEEP");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    String status = workflow.getStatus();
+    assertThat(status).isEqualTo("SLEEPING");
+  }
+
+  @Test
+  void testMockedActivity() {
     GreetingActivities activities =
         mock(GreetingActivities.class, withSettings().withoutAnnotations());
     when(activities.composeGreeting("Hello", "World")).thenReturn("Hello World!");

@@ -21,11 +21,15 @@
 
 package ai.applica.spring.boot.starter.temporal.samples;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChildImpl;
@@ -34,44 +38,28 @@ import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingW
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for {@link HelloChild}. Doesn't use an external Temporal service. */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @TemporalTest
-public class HelloChildTest {
-
-  /** Prints workflow histories under test in case of a test failure. */
-  @Rule
-  public TestWatcher watchman =
-      new TestWatcher() {
-        @Override
-        protected void failed(Throwable e, Description description) {
-          if (testEnv != null) {
-            System.err.println(testEnv.getDiagnostics());
-            testEnv.close();
-          }
-        }
-      };
+class HelloChildTest {
 
   private TestWorkflowEnvironment testEnv;
   GreetingWorkflow workflow;
 
+  @RegisterExtension TemporalTestWatcher temporalTestWatcher = new TemporalTestWatcher();
   @Autowired WorkflowFactory fact;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
+    temporalTestWatcher.setEnvironment(testEnv);
 
     // Get a workflow stub using the same task queue the worker uses.
     workflow =
@@ -79,13 +67,13 @@ public class HelloChildTest {
             GreetingWorkflow.class, GreetingWorkflowImpl.class, testEnv.getWorkflowClient());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void testChild() {
+  void testChild() {
     fact.makeWorker(testEnv, GreetingWorkflowImpl.class, GreetingChildImpl.class);
 
     testEnv.start();
@@ -103,7 +91,7 @@ public class HelloChildTest {
   }
 
   @Test
-  public void testMockedChild() {
+  void testMockedChild() {
     Worker worker = fact.makeWorker(testEnv, GreetingWorkflowImpl.class);
     // As new mock is created on each decision the only last one is useful to verify calls.
     AtomicReference<GreetingChild> lastChildMock = new AtomicReference<>();
@@ -123,6 +111,6 @@ public class HelloChildTest {
     String greeting = workflow.getGreeting("World");
     assertEquals("Hello World!", greeting);
     GreetingChild mock = lastChildMock.get();
-    verify(mock).composeGreeting(eq("Hello"), eq("World"));
+    verify(mock).composeGreeting("Hello", "World");
   }
 }

@@ -25,57 +25,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.*;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesActivity;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesTimeoutWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesTimeoutWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflow;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.TimeoutPropertiesActivity;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.Map;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Unit test for temporal properties usage */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @TemporalTest
-public class HelloPropertiesTest {
-
-  private TestWorkflowEnvironment testEnv;
+class HelloPropertiesTest {
 
   @Autowired WorkflowFactory fact;
   @Autowired PropertiesActivity propertiesActivity;
   @Autowired TimeoutPropertiesActivity timeoutPropertiesActivity;
+  private TestWorkflowEnvironment testEnv;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     testEnv.close();
   }
 
   @Test
-  public void shouldAssignProperties() {
+  void shouldAssignProperties() {
     PropertiesWorkflow workflow =
         createWorkflow(PropertiesWorkflow.class, PropertiesWorkflowImpl.class, propertiesActivity);
 
     testEnv.start();
 
     Map<String, Duration> workflowTimeouts = workflow.getTimeouts();
-    assertThat(workflowTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(Duration.ofSeconds(1000)); // workflow timeout
-    assertThat(workflowTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(Duration.ofSeconds(15));
+    assertThat(workflowTimeouts)
+        .containsEntry(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY, Duration.ofSeconds(1000))
+        .containsEntry(TestConstants.START_TO_CLOSE_TIMEOUT_KEY, Duration.ofSeconds(15));
   }
 
   @Test
-  public void shouldSetStartToCloseValueToScheduleToCloseTimeout() {
+  void shouldSetStartToCloseValueToScheduleToCloseTimeout() {
     PropertiesDotWorkflow workflow =
         createWorkflow(
             PropertiesDotWorkflow.class, PropertiesDotWorkflowImpl.class, propertiesActivity);
@@ -84,14 +86,13 @@ public class HelloPropertiesTest {
 
     Duration threeMinutes = Duration.ofMinutes(3);
     Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
-    assertThat(workflowStartToCloseTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(threeMinutes);
-    assertThat(workflowStartToCloseTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(threeMinutes);
+    assertThat(workflowStartToCloseTimeouts)
+        .containsEntry(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY, threeMinutes)
+        .containsEntry(TestConstants.START_TO_CLOSE_TIMEOUT_KEY, threeMinutes);
   }
 
   @Test
-  public void shouldAssignWorkflowTimeouts() {
+  void shouldAssignWorkflowTimeouts() {
     PropertiesTimeoutWorkflow workflow =
         createWorkflow(
             PropertiesTimeoutWorkflow.class,
@@ -101,11 +102,10 @@ public class HelloPropertiesTest {
 
     Map<String, Duration> workflowStartToCloseTimeouts = workflow.getTimeouts();
 
-    int workflowTimeout = 1000;
-    assertThat(workflowStartToCloseTimeouts.get(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(Duration.ofSeconds(workflowTimeout));
-    assertThat(workflowStartToCloseTimeouts.get(TestConstants.START_TO_CLOSE_TIMEOUT_KEY))
-        .isEqualTo(Duration.ofSeconds(workflowTimeout));
+    Duration duration = Duration.ofSeconds(1000);
+    assertThat(workflowStartToCloseTimeouts)
+        .containsEntry(TestConstants.SCHEDULE_TO_CLOSE_TIMEOUT_KEY, duration)
+        .containsEntry(TestConstants.START_TO_CLOSE_TIMEOUT_KEY, duration);
   }
 
   private <T> T createWorkflow(

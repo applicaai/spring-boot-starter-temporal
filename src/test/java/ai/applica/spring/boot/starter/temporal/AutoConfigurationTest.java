@@ -17,7 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.temporal.client.WorkflowOptions.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +37,11 @@ public class AutoConfigurationTest {
     //   e.printStackTrace();
     // }
     HelloWorkflow impl = fact.makeStub(HelloWorkflow.class, HelloWorkflowImpl.class);
-    assertNotNull(impl.process());
+    assertThat(impl.process()).isNotNull();
 
     Builder options = fact.defaultOptionsBuilder(HelloWorkflowImplTwo.class);
     options.setWorkflowId("workflowId-1");
     HelloWorkflow impl2 = fact.makeStub(HelloWorkflow.class, options);
-    assertNotNull(impl2.process());
+    assertThat(impl2.process()).isNotNull();
   }
 }

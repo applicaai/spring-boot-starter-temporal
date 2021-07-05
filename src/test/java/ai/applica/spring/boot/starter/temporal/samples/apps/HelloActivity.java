@@ -21,11 +21,14 @@
 
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +51,9 @@ public class HelloActivity {
     /** @return greeting string */
     @WorkflowMethod
     String getGreeting(String name);
+
+    @QueryMethod
+    String getStatus();
   }
 
   /** Activity interface is just a POJI. */
@@ -55,12 +61,17 @@ public class HelloActivity {
   public interface GreetingActivities {
     @ActivityMethod
     String composeGreeting(String greeting, String name);
+
+    @ActivityMethod
+    void sleepFor10Seconds();
   }
 
   /** GreetingWorkflow implementation that calls GreetingsActivities#composeGreeting. */
   @Component
   @TemporalWorkflow(TASK_QUEUE)
   public static class GreetingWorkflowImpl implements GreetingWorkflow {
+
+    private String status = "STARTED";
 
     /**
      * Activity stub implements activity interface and proxies calls to it to Temporal activity
@@ -72,7 +83,21 @@ public class HelloActivity {
     @Override
     public String getGreeting(String name) {
       // This is a blocking call that returns only after the activity has completed.
-      return activities.composeGreeting("Hello", name);
+      if ("SLEEP".equals(name)) {
+        status = "SLEEPING";
+        activities.sleepFor10Seconds();
+        status = "SLEPT";
+        return "SLEPT";
+      } else {
+        String result = activities.composeGreeting("Hello", name);
+        status = "FINISHED";
+        return result;
+      }
+    }
+
+    @Override
+    public String getStatus() {
+      return status;
     }
   }
 
@@ -92,7 +117,17 @@ public class HelloActivity {
     public String composeGreeting(String greeting, String name) {
       return greeting + " " + name + simpleExclamationBean.getExclamation();
     }
+
+    @Override
+    public void sleepFor10Seconds() {
+      try {
+        SECONDS.sleep(10);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
+
   // FIXME
   // @EnableTemporal
   // @SpringBootApplication
