@@ -122,12 +122,10 @@ public class TemporalProperties {
                 value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
               }
               if (value.getWorkflowPollThreadPoolSize() == null) {
-                value.setWorkflowPollThreadPoolSize(
-                    workflowDefaults.getWorkflowPollThreadPoolSize());
+                value.setWorkflowPollThreadPoolSize(workflowDefaults.getWorkflowPollThreadPoolSize());
               }
               if (value.getActivityPollThreadPoolSize() == null) {
-                value.setActivityPollThreadPoolSize(
-                    workflowDefaults.getActivityPollThreadPoolSize());
+                value.setActivityPollThreadPoolSize(workflowDefaults.getActivityPollThreadPoolSize());
               }
               addedDefaultsToWorkflows = true;
             });
