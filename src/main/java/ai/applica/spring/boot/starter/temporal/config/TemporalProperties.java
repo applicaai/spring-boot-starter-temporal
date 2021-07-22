@@ -67,6 +67,10 @@ public class TemporalProperties {
     private Integer activityPoolSize;
 
     private Integer workflowPoolSize;
+
+    private Integer activityPollThreadPoolSize;
+
+    private Integer workflowPollThreadPoolSize;
   }
 
   /**
@@ -117,6 +121,12 @@ public class TemporalProperties {
               if (value.getWorkflowPoolSize() == null) {
                 value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
               }
+              if (value.getWorkflowPollThreadPoolSize() == null) {
+                value.setWorkflowPollThreadPoolSize(workflowDefaults.getWorkflowPollThreadPoolSize());
+              }
+              if (value.getActivityPollThreadPoolSize() == null) {
+                value.setActivityPollThreadPoolSize(workflowDefaults.getActivityPollThreadPoolSize());
+              }
               addedDefaultsToWorkflows = true;
             });
       }
@@ -140,6 +150,12 @@ public class TemporalProperties {
               }
               if (value.getWorkflowPoolSize() == null) {
                 value.setWorkflowPoolSize(activityWorkerDefaults.getWorkflowPoolSize());
+              }
+              if (value.getWorkflowPollThreadPoolSize() == null) {
+                value.setWorkflowPollThreadPoolSize(workflowDefaults.getWorkflowPollThreadPoolSize());
+              }
+              if (value.getActivityPollThreadPoolSize() == null) {
+                value.setActivityPollThreadPoolSize(workflowDefaults.getActivityPollThreadPoolSize());
               }
               addedDefaultsToActivities = true;
             });

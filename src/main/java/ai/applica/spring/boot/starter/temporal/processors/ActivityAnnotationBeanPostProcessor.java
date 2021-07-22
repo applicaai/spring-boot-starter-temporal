@@ -90,8 +90,15 @@ public class ActivityAnnotationBeanPostProcessor
     WorkerOptions.Builder workerOptions =
         WorkerOptions.newBuilder()
             .setMaxConcurrentActivityExecutionSize(option.getActivityPoolSize());
+
+    if (option.getActivityPollThreadPoolSize() != null) {
+      workerOptions.setActivityPollThreadCount(option.getActivityPollThreadPoolSize());
+    }
     if (option.getWorkflowPoolSize() != null) {
       workerOptions.setMaxConcurrentWorkflowTaskExecutionSize(option.getWorkflowPoolSize());
+    }
+    if (option.getWorkflowPollThreadPoolSize() != null) {
+      workerOptions.setWorkflowPollThreadCount(option.getWorkflowPollThreadPoolSize());
     }
     return workerOptions.build();
   }
