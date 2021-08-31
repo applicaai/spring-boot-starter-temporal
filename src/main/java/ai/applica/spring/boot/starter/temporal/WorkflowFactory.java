@@ -115,6 +115,7 @@ public class WorkflowFactory {
     Builder builder =
         WorkflowOptions.newBuilder()
             .setTaskQueue(option.getTaskQueue())
+            .setCronSchedule(option.getCronSchedule())
             .setWorkflowExecutionTimeout(
                 Duration.of(
                     option.getExecutionTimeout(),

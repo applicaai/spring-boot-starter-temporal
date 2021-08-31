@@ -60,6 +60,8 @@ public class TemporalProperties {
 
     private String taskQueue;
 
+    private String cronSchedule;
+
     private Long executionTimeout;
 
     private String executionTimeoutUnit;
@@ -98,6 +100,7 @@ public class TemporalProperties {
   @NoArgsConstructor
   public static class ActivityStubOptions {
     private String taskQueue;
+    private String cronSchedule;
     private Duration scheduleToCloseTimeout;
     private Duration scheduleToStartTimeout;
     private Duration startToCloseTimeout;
@@ -112,6 +115,9 @@ public class TemporalProperties {
               if (value.getExecutionTimeout() == null) {
                 value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());
               }
+
+              value.cronSchedule = value.getCronSchedule() == null ? workflowDefaults.cronSchedule : value.cronSchedule;
+
               if (value.getExecutionTimeoutUnit() == null) {
                 value.setExecutionTimeoutUnit(workflowDefaults.getExecutionTimeoutUnit());
               }
