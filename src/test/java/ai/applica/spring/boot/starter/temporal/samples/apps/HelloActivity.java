@@ -25,6 +25,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
+import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -34,6 +35,7 @@ import io.temporal.workflow.WorkflowMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -128,9 +130,9 @@ public class HelloActivity {
     }
   }
 
-  // FIXME
-  // @EnableTemporal
-  // @SpringBootApplication
+
+  @EnableTemporal
+  @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;

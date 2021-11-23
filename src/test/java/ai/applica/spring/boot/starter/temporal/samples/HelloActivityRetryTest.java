@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityRetry.GreetingActivities;
@@ -43,12 +42,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloActivityRetry}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloActivityRetryTest {
+class HelloActivityRetryTest extends BaseTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;

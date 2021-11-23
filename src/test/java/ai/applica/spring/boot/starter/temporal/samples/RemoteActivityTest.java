@@ -25,28 +25,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ai.applica.spring.boot.starter.temporal.*;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
+import ai.applica.spring.boot.starter.temporal.HelloRemoteWorkflowImpl;
+import ai.applica.spring.boot.starter.temporal.HelloWorkflow;
+import ai.applica.spring.boot.starter.temporal.RemoteActivities;
+import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
 import ai.applica.spring.boot.starter.temporal.config.TemporalProperties;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
-import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation;
+import ai.applica.spring.boot.starter.temporal.samples.apps.RemoteActivity;
 import io.temporal.testing.TestWorkflowEnvironment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-/** Unit test for {@link RemoteActivity}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RemoteActivityTest {
-
-  static final String ACTIVITY_STUB_CONFIG_NAME = "RemoteActivities";
+/**
+ * Unit test for {@link RemoteActivity}. Creates mock activities and verifies that stub
+ * configuration is taken from the YAML file ({@code spring.temporal.activityStubs}) when absent
+ * from {@link @ActivityStub} annotation.
+ */
+class RemoteActivityTest extends BaseTest {
 
   @Autowired TemporalProperties temporalProperties;
   @Autowired WorkflowFactory fact;
@@ -89,7 +87,10 @@ class RemoteActivityTest {
 
   private void createWorkerForRemoteActivity(RemoteActivities remoteActivity) {
     String remoteTaskQueue =
-        temporalProperties.getActivityStubs().get(ACTIVITY_STUB_CONFIG_NAME).getTaskQueue();
+        temporalProperties
+            .getActivityStubs()
+            .get(RemoteActivities.class.getSimpleName())
+            .getTaskQueue();
     testEnv.newWorker(remoteTaskQueue).registerActivitiesImplementations(remoteActivity);
   }
 }

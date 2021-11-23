@@ -96,9 +96,8 @@ public class HelloSignal {
     }
   }
 
-  // FIXME
-  // @EnableTemporal
-  // @SpringBootApplication
+  //  @EnableTemporal
+  //  @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;

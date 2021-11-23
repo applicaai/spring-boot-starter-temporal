@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivity.GreetingWorkflow;
@@ -39,12 +38,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /** Unit test for {@link HelloActivity}. Doesn't use an external Temporal service. */
-@SpringBootTest(properties = {"spring.temporal.workflowDefaults.executionTimeout=9"})
-@TemporalTest
-class HelloActivityTest {
+@ActiveProfiles("test-timeout")
+class HelloActivityTest extends BaseTest {
 
   GreetingWorkflow workflow;
   @Autowired WorkflowFactory fact;

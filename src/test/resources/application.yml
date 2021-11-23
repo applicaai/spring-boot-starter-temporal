@@ -75,3 +75,13 @@ spring.temporal:
     SimpleActivity:
       taskQueue: SimpleActivity
 
+---
+spring:
+  config:
+    activate:
+      on-profile: test-timeout
+
+
+spring.temporal:
+  workflowDefaults:
+    executionTimeout: 9

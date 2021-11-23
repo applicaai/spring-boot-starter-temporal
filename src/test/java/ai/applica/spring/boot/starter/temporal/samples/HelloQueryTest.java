@@ -24,7 +24,6 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloQuery.GreetingWorkflow;
@@ -38,12 +37,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloQuery}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloQueryTest {
+class HelloQueryTest extends BaseTest {
 
   private TestWorkflowEnvironment testEnv;
   GreetingWorkflow workflow;
