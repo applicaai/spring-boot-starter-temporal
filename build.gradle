@@ -83,9 +83,6 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
-//    filter {
-//        includeTestsMatching("ai.applica.spring.boot.starter.temporal.samples.tests.*")
-//    }
 }
 
 license {
