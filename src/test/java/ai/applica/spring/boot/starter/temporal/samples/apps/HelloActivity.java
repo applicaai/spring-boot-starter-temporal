@@ -130,7 +130,6 @@ public class HelloActivity {
     }
   }
 
-
   @EnableTemporal
   @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {

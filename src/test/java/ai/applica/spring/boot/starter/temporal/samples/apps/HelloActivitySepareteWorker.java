@@ -100,7 +100,6 @@ public class HelloActivitySepareteWorker {
     }
   }
 
-
   @EnableTemporal
   @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {

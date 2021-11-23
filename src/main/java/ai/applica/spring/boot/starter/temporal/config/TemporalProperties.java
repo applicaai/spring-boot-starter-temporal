@@ -17,6 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal.config;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Map;
 import lombok.Data;
@@ -166,5 +167,16 @@ public class TemporalProperties {
       }
     }
     return activityWorkers;
+  }
+
+  public ActivityStubOptions getActivityStubOptionsForField(Field field) {
+    Map<String, ActivityStubOptions> stubMap = getActivityStubs();
+    if (stubMap != null) {
+      String simpleStubName = field.getType().getSimpleName();
+      String fullStubName =
+          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
+
+      return stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
+    } else return null;
   }
 }

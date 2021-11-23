@@ -148,15 +148,7 @@ public class WorkflowAnnotationBeanPostProcessor
   }
 
   private boolean hasActivityStubConfiguration(Field field) {
-    Map stubsMap = temporalProperties.getActivityStubs();
-    if (stubsMap != null) {
-      String simpleStubName = field.getType().getSimpleName();
-      String fullStubName =
-          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
-      return stubsMap.containsKey(simpleStubName) || stubsMap.containsKey(fullStubName);
-    } else {
-      return false;
-    }
+    return temporalProperties.getActivityStubOptionsForField(field) != null;
   }
 
   private WorkerOptions getWorkerOptions(WorkflowOption option) {
