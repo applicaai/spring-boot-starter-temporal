@@ -136,13 +136,27 @@ public class WorkflowAnnotationBeanPostProcessor
     List<Object> activities = new ArrayList<Object>();
     for (Field field : targetClass.getDeclaredFields()) {
       ActivityStub[] annotations = field.getAnnotationsByType(ActivityStub.class);
-      if (annotations.length > 0 && "".equals(annotations[0].taskQueue())) {
+      if (annotations.length > 0
+          && "".equals(annotations[0].taskQueue())
+          && !hasActivityStubConfiguration(field)) {
         DependencyDescriptor desc = new DependencyDescriptor(field, true);
         Object dep = ((DefaultListableBeanFactory) beanFactory).resolveDependency(desc, beanName);
         activities.add(dep);
       }
     }
     return activities;
+  }
+
+  private boolean hasActivityStubConfiguration(Field field) {
+    Map stubsMap = temporalProperties.getActivityStubs();
+    if (stubsMap != null) {
+      String simpleStubName = field.getType().getSimpleName();
+      String fullStubName =
+          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
+      return stubsMap.containsKey(simpleStubName) || stubsMap.containsKey(fullStubName);
+    } else {
+      return false;
+    }
   }
 
   private WorkerOptions getWorkerOptions(WorkflowOption option) {
