@@ -7,5 +7,4 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TemporalTest
 @SpringBootTest(classes = TestApplicationConfiguration.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-// @TestMethodOrder(MethodOrderer.MethodName.class)
 public abstract class BaseTest {}
