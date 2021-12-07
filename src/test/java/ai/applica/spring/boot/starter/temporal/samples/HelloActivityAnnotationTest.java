@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation.GreetingActivities;
@@ -48,16 +47,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * Unit test for {@link
  * ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityAnnotation}. Doesn't use an
  * external Temporal service.
  */
-@SpringBootTest
-@TemporalTest
-class HelloActivityAnnotationTest {
+class HelloActivityAnnotationTest extends BaseTest {
 
   @Autowired WorkflowFactory fact;
   @Autowired GreetingActivities greetingActivity;

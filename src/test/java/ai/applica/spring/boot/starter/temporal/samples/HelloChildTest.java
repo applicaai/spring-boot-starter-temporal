@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloChild.GreetingChild;
@@ -43,12 +42,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloChild}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloChildTest {
+class HelloChildTest extends BaseTest {
 
   private TestWorkflowEnvironment testEnv;
   GreetingWorkflow workflow;
