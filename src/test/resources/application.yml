@@ -52,6 +52,8 @@ spring.temporal:
       taskQueue: HelloActivityRetry
     HelloActivityAnnotation:
       taskQueue: HelloActivityAnnotation
+    HelloActivityOptionsModifier:
+      taskQueue: HelloActivityOptionsModifier
     HelloChild:
       taskQueue: HelloChild
     HelloQuery:
