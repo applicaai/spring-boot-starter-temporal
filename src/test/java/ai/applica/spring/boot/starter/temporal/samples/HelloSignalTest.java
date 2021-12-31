@@ -24,7 +24,6 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloSignal;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloSignal.GreetingWorkflow;
@@ -41,12 +40,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloSignal}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloSignalTest {
+class HelloSignalTest extends BaseTest {
 
   private TestWorkflowEnvironment testEnv;
   private WorkflowClient client;

@@ -24,7 +24,6 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesActivity;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflow;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloProperties.PropertiesDotWorkflowImpl;
@@ -41,12 +40,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for temporal properties usage */
-@SpringBootTest
-@TemporalTest
-class HelloPropertiesTest {
+class HelloPropertiesTest extends BaseTest {
 
   @Autowired WorkflowFactory fact;
   @Autowired PropertiesActivity propertiesActivity;

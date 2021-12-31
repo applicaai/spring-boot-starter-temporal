@@ -24,7 +24,6 @@ package ai.applica.spring.boot.starter.temporal.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker.GreetingActivities;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivitySepareteWorker.GreetingSeparateWorkflow;
@@ -35,12 +34,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloActivitySepareteWorker}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloActivitySeparateWorkerTest {
+class HelloActivitySeparateWorkerTest extends BaseTest {
 
   static final String ACTIVITY_TASK_QUEUE = "HelloActivitySepareteWorkerActivity";
 

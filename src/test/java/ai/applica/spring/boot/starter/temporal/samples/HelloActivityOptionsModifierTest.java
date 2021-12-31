@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
-import ai.applica.spring.boot.starter.temporal.annotations.TemporalTest;
 import ai.applica.spring.boot.starter.temporal.extensions.TemporalTestWatcher;
 import ai.applica.spring.boot.starter.temporal.samples.apps.HelloActivityOptionsModifier;
 import io.temporal.api.enums.v1.RetryState;
@@ -42,12 +41,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /** Unit test for {@link HelloActivityOptionsModifier}. Doesn't use an external Temporal service. */
-@SpringBootTest
-@TemporalTest
-class HelloActivityOptionsModifierTest {
+class HelloActivityOptionsModifierTest extends BaseTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
