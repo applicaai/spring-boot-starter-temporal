@@ -17,6 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal.processors;
 
+import ai.applica.spring.boot.starter.temporal.InvalidOptionsModifierArgumentException;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityOptionsModifier;
 import ai.applica.spring.boot.starter.temporal.annotations.ActivityStub;
 import ai.applica.spring.boot.starter.temporal.annotations.RetryActivityOptions;
@@ -31,6 +32,7 @@ import io.temporal.workflow.Workflow;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -93,28 +95,23 @@ public class ActivityStubInterceptor {
   private ActivityOptions buildOptions(
       Object target, ActivityStub activityStubAnnotation, Field field) {
 
-    // Build default options
-    Builder options = ActivityOptions.newBuilder();
+    Builder options = buildDefaultOptions(activityStubAnnotation);
 
-    if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
-      options.setTaskQueue(activityStubAnnotation.taskQueue());
-    }
-    // from configuration
-    if (temporalProperties.getActivityStubDefaults() != null) {
-      ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
-      setupTimeoutsActivityStubOptions(options, activityStubDefaults);
-    }
+    options = setupFromConfiguration(options);
 
-    options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
-    // from deprecated property
     setupTimeoutFromDeprecatedProperty(activityStubAnnotation, options);
-    // from annotation properties
     setupTimeoutsFromAnnotation(options, activityStubAnnotation);
 
     if (nonDefaultRetryOptions(activityStubAnnotation.retryOptions())) {
       options.setRetryOptions(mergeRetryOptions(activityStubAnnotation.retryOptions(), options));
     }
-    // from configuration of particular activity stub
+
+    setupFromActivityStub(field, options);
+    options = applyOptionsModifier(target, field, options);
+    return options.build();
+  }
+
+  private void setupFromActivityStub(Field field, Builder options) {
     if (temporalProperties.getActivityStubs() != null) {
       String simpleStubName = field.getType().getSimpleName();
       String fullStubName =
@@ -130,14 +127,30 @@ public class ActivityStubInterceptor {
         }
       }
     }
-    // chk for modifier
+  }
+
+  private Builder setupFromConfiguration(Builder options) {
+    if (temporalProperties.getActivityStubDefaults() != null) {
+      ActivityStubOptions activityStubDefaults = temporalProperties.getActivityStubDefaults();
+      setupTimeoutsActivityStubOptions(options, activityStubDefaults);
+    }
+
+    options = temporalOptionsConfiguration.modifyDefaultActivityOptions(options);
+    return options;
+  }
+
+  private static Builder buildDefaultOptions(ActivityStub activityStubAnnotation) {
+    Builder options = ActivityOptions.newBuilder();
+
+    if (StringUtils.hasText(activityStubAnnotation.taskQueue())) {
+      options.setTaskQueue(activityStubAnnotation.taskQueue());
+    }
+    return options;
+  }
+
+  private Builder applyOptionsModifier(Object target, Field field, Builder options) {
     Set<Method> methods =
-        MethodIntrospector.selectMethods(
-            targetClass,
-            (ReflectionUtils.MethodFilter)
-                method ->
-                    AnnotationUtils.findAnnotation(method, ActivityOptionsModifier.class) != null
-                        && method.getParameterTypes()[0] == field.getType());
+        MethodIntrospector.selectMethods(targetClass, createOptionsModifierMethodFilter(field));
     if (!methods.isEmpty()) {
       Method method = (Method) methods.toArray()[0];
       log.debug("Found options modifier by name {} on object {}", method.getName(), targetClass);
@@ -151,7 +164,26 @@ public class ActivityStubInterceptor {
       log.debug(
           "No options modifier method found for {} on object {}", field.getName(), targetClass);
     }
-    return options.build();
+    return options;
+  }
+
+  private static ReflectionUtils.MethodFilter createOptionsModifierMethodFilter(Field field) {
+    return method ->
+        AnnotationUtils.findAnnotation(method, ActivityOptionsModifier.class) != null
+            && methodHasMatchingArgument(field, method);
+  }
+
+  private static boolean methodHasMatchingArgument(Field field, Method method) {
+    Class<?> expectedType = field.getType();
+    try {
+      ParameterizedType genericParameterType =
+          (ParameterizedType) method.getGenericParameterTypes()[0];
+      return expectedType
+          .getName()
+          .equals(genericParameterType.getActualTypeArguments()[0].getTypeName());
+    } catch (ClassCastException | ArrayIndexOutOfBoundsException ex) {;
+      throw new InvalidOptionsModifierArgumentException(expectedType);
+    }
   }
 
   private void setupTimeoutFromDeprecatedProperty(
