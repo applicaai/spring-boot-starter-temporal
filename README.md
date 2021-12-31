@@ -62,6 +62,9 @@ spring.temporal:
       taskQueue: one
     two:
       taskQueue: one
+    cron:
+      taskQueue: cron
+      cronSchedule: '* * * * *'
 ```
 For the docker running locally you do not need any configuration of the host. For the workflows it is convenient to define workflowDefaults as 
 not to repeat same configuration on every workflow.
