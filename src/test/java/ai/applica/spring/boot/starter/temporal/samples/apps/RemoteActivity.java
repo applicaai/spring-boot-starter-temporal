@@ -35,7 +35,7 @@ public class RemoteActivity {
     public void run(String... input) {
 
       fact.makeStub(HelloWorkflow.class, NoHelloWorkflowImpl.class);
-      System.out.println("\n\nEchoWorkflow stub created successfully!\n\n");
+      System.out.println("\n\nHelloWorkflow stub created successfully!\n\n");
 
       System.exit(0);
     }

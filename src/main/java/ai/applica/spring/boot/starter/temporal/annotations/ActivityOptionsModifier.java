@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate method to change options for activity stub in a workflow. Method will be methed to
+ * Annotate method to change options for activity stub in a workflow. Method will be matched to
  * activity stub based on first argument type.
  *
  * <pre>
