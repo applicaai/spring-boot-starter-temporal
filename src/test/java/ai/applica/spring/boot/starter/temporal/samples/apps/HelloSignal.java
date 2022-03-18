@@ -22,6 +22,7 @@
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions.Builder;
@@ -35,6 +36,7 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
 /**
@@ -96,9 +98,8 @@ public class HelloSignal {
     }
   }
 
-  // FIXME
-  // @EnableTemporal
-  // @SpringBootApplication
+  @EnableTemporal
+  @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;

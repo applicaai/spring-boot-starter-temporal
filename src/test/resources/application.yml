@@ -34,6 +34,9 @@ spring.temporal:
     "[GreetingSeparateWorkflow.GreetingActivities]":
       taskQueue: HelloActivitySepareteWorkerActivity
       scheduleToCloseTimeout: PT2S
+    RemoteActivities:
+      taskQueue: RemoteActivitiesQueue
+      scheduleToCloseTimeout: PT20S
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS
@@ -74,3 +77,13 @@ spring.temporal:
     SimpleActivity:
       taskQueue: SimpleActivity
 
+---
+spring:
+  config:
+    activate:
+      on-profile: test-timeout
+
+
+spring.temporal:
+  workflowDefaults:
+    executionTimeout: 9

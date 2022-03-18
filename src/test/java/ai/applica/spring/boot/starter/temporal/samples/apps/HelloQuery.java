@@ -22,6 +22,7 @@
 package ai.applica.spring.boot.starter.temporal.samples.apps;
 
 import ai.applica.spring.boot.starter.temporal.WorkflowFactory;
+import ai.applica.spring.boot.starter.temporal.annotations.EnableTemporal;
 import ai.applica.spring.boot.starter.temporal.annotations.TemporalWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.workflow.QueryMethod;
@@ -32,6 +33,7 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
 /** Demonstrates query capability. Requires a local instance of Temporal server to be running. */
@@ -71,9 +73,9 @@ public class HelloQuery {
       return greeting;
     }
   }
-  // FIXME
-  // @EnableTemporal
-  // @SpringBootApplication
+
+  @EnableTemporal
+  @SpringBootApplication
   public static class GreetingWorkflowRequester implements CommandLineRunner {
 
     @Autowired private WorkflowFactory fact;

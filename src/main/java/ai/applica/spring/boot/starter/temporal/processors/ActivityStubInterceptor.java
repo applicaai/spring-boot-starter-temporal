@@ -36,7 +36,6 @@ import java.lang.reflect.ParameterizedType;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import lombok.RequiredArgsConstructor;
@@ -113,13 +112,9 @@ public class ActivityStubInterceptor {
 
   private void setupFromActivityStub(Field field, Builder options) {
     if (temporalProperties.getActivityStubs() != null) {
-      String simpleStubName = field.getType().getSimpleName();
-      String fullStubName =
-          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
-      Map<String, ActivityStubOptions> stubMap = temporalProperties.getActivityStubs();
-
+      // from configuration of particular activity stub
       ActivityStubOptions applicableOptions =
-          stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
+          temporalProperties.getActivityStubOptionsForField(field);
       if (applicableOptions != null) {
         setupTimeoutsActivityStubOptions(options, applicableOptions);
         if (applicableOptions.getTaskQueue() != null) {

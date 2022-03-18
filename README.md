@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.8.1-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.9.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.8.1-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -62,6 +62,9 @@ spring.temporal:
       taskQueue: one
     two:
       taskQueue: one
+    cron:
+      taskQueue: cron
+      cronSchedule: '* * * * *'
 ```
 For the docker running locally you do not need any configuration of the host. For the workflows it is convenient to define workflowDefaults as 
 not to repeat same configuration on every workflow.

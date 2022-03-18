@@ -17,6 +17,7 @@
 
 package ai.applica.spring.boot.starter.temporal.config;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Map;
 import lombok.Data;
@@ -60,6 +61,8 @@ public class TemporalProperties {
 
     private String taskQueue;
 
+    private String cronSchedule;
+
     private Long executionTimeout;
 
     private String executionTimeoutUnit;
@@ -98,6 +101,7 @@ public class TemporalProperties {
   @NoArgsConstructor
   public static class ActivityStubOptions {
     private String taskQueue;
+    private String cronSchedule;
     private Duration scheduleToCloseTimeout;
     private Duration scheduleToStartTimeout;
     private Duration startToCloseTimeout;
@@ -112,6 +116,12 @@ public class TemporalProperties {
               if (value.getExecutionTimeout() == null) {
                 value.setExecutionTimeout(workflowDefaults.getExecutionTimeout());
               }
+
+              value.cronSchedule =
+                  value.getCronSchedule() == null
+                      ? workflowDefaults.cronSchedule
+                      : value.cronSchedule;
+
               if (value.getExecutionTimeoutUnit() == null) {
                 value.setExecutionTimeoutUnit(workflowDefaults.getExecutionTimeoutUnit());
               }
@@ -122,10 +132,12 @@ public class TemporalProperties {
                 value.setWorkflowPoolSize(workflowDefaults.getWorkflowPoolSize());
               }
               if (value.getWorkflowPollThreadPoolSize() == null) {
-                value.setWorkflowPollThreadPoolSize(workflowDefaults.getWorkflowPollThreadPoolSize());
+                value.setWorkflowPollThreadPoolSize(
+                    workflowDefaults.getWorkflowPollThreadPoolSize());
               }
               if (value.getActivityPollThreadPoolSize() == null) {
-                value.setActivityPollThreadPoolSize(workflowDefaults.getActivityPollThreadPoolSize());
+                value.setActivityPollThreadPoolSize(
+                    workflowDefaults.getActivityPollThreadPoolSize());
               }
               addedDefaultsToWorkflows = true;
             });
@@ -152,15 +164,30 @@ public class TemporalProperties {
                 value.setWorkflowPoolSize(activityWorkerDefaults.getWorkflowPoolSize());
               }
               if (value.getWorkflowPollThreadPoolSize() == null) {
-                value.setWorkflowPollThreadPoolSize(workflowDefaults.getWorkflowPollThreadPoolSize());
+                value.setWorkflowPollThreadPoolSize(
+                    workflowDefaults.getWorkflowPollThreadPoolSize());
               }
               if (value.getActivityPollThreadPoolSize() == null) {
-                value.setActivityPollThreadPoolSize(workflowDefaults.getActivityPollThreadPoolSize());
+                value.setActivityPollThreadPoolSize(
+                    workflowDefaults.getActivityPollThreadPoolSize());
               }
               addedDefaultsToActivities = true;
             });
       }
     }
     return activityWorkers;
+  }
+
+  public ActivityStubOptions getActivityStubOptionsForField(Field field) {
+    Map<String, ActivityStubOptions> stubMap = getActivityStubs();
+    if (stubMap != null) {
+      String simpleStubName = field.getType().getSimpleName();
+      String fullStubName =
+          field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
+
+      return stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
+    } else { 
+      return null;
+    }
   }
 }
