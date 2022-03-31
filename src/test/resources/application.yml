@@ -20,6 +20,7 @@ spring.temporal:
   # port: 7233
   # useSsl: false
   # createWorkers: true
+  # namespace: default
   activityStubs:
     GreetingActivities:
       scheduleToCloseTimeout: PT20S

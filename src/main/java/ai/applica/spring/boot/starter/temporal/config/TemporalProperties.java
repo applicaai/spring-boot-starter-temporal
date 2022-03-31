@@ -37,6 +37,8 @@ public class TemporalProperties {
 
   private boolean createWorkers = true;
 
+  private String namespace = "default";
+
   private WorkflowOption workflowDefaults;
 
   private WorkflowOption activityWorkerDefaults;
@@ -186,7 +188,7 @@ public class TemporalProperties {
           field.getDeclaringClass().getInterfaces()[0].getSimpleName() + "." + simpleStubName;
 
       return stubMap.getOrDefault(fullStubName, stubMap.get(simpleStubName));
-    } else { 
+    } else {
       return null;
     }
   }
