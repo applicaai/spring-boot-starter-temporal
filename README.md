@@ -6,7 +6,7 @@ This is the driver making it convenient to use Temporal with Spring Boot. It is 
 
 ### Gradle
 ```gradle
-implementation 'com.github.applicaai:spring-boot-starter-temporal:0.9.0-SNAPSHOT'
+implementation 'com.github.applicaai:spring-boot-starter-temporal:0.10.0-SNAPSHOT'
 ```
 
 ### Maven
@@ -14,7 +14,7 @@ implementation 'com.github.applicaai:spring-boot-starter-temporal:0.9.0-SNAPSHOT
 <dependency>
     <groupId>com.github.applicaai</groupId>
     <artifactId>spring-boot-starter-temporal</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.10.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -52,6 +52,7 @@ spring.temporal:
   # port: 7233
   # useSsl: false
   # createWorkers: true
+  # namespace: default
   workflowDefaults:
     executiontimeout: 1000
     executiontimeoutUnit: SECONDS
@@ -247,6 +248,20 @@ spring.temporal:
 ```
 
 You can also disable creation of workflows for given test when testing using annotation `@TemporalTest`
+
+### Namespace
+
+You can make your application use specific temporal's namespace (default namespace name is **default**).
+
+```yaml
+spring.temporal:
+  namespace: custom-namespace
+```
+
+If You leave namespace empty or set value to `null`, then default namespace will be used.
+
+All workflows will use namespace defined in yaml, unless You override this setting in `TemporalOptionsConfiguration.modifyClientOptions()` using `setNamespace()` of `WorkflowClientOptions.Builder` class.
+
 ### Writing tests
 
 Please look into test directory `samples` folder in the sources.

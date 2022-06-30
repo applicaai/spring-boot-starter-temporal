@@ -86,8 +86,20 @@ public class TemporalBootstrapConfiguration {
                   .build());
     }
     WorkflowClientOptions.Builder optionsBuilder =
-        temporalOptionsConfiguration.modifyClientOptions(WorkflowClientOptions.newBuilder());
+        temporalOptionsConfiguration.modifyClientOptions(
+            preBuildWorkflowClientOptions(temporalProperties));
+
     return WorkflowClient.newInstance(service, optionsBuilder.build());
+  }
+
+  private WorkflowClientOptions.Builder preBuildWorkflowClientOptions(
+      TemporalProperties temporalProperties) {
+    String namespace = temporalProperties.getNamespace();
+    WorkflowClientOptions.Builder builder = WorkflowClientOptions.newBuilder();
+    if (namespace != null && !namespace.trim().isEmpty()) {
+      builder.setNamespace(namespace);
+    }
+    return builder;
   }
 
   private boolean hostAndPortAreSet(TemporalProperties temporalProperties) {
