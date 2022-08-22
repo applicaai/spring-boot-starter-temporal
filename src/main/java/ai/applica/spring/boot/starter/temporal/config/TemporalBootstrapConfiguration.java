@@ -30,6 +30,7 @@ import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerFactoryOptions;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -58,7 +59,11 @@ public class TemporalBootstrapConfiguration {
 
   @Bean
   public WorkerFactory defaultWorkerFactory(WorkflowClient workflowClient) {
-    return WorkerFactory.newInstance(workflowClient);
+    WorkerFactoryOptions.Builder builder =
+        temporalOptionsConfiguration.modifyDefaultWorkerFactoryOptions(
+            WorkerFactoryOptions.newBuilder());
+    WorkerFactoryOptions build = builder.build();
+    return WorkerFactory.newInstance(workflowClient, build);
   }
 
   @Bean
