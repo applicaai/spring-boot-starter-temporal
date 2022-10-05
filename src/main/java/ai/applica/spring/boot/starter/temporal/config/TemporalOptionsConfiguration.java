@@ -20,6 +20,7 @@ package ai.applica.spring.boot.starter.temporal.config;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactoryOptions;
 
 public interface TemporalOptionsConfiguration {
@@ -54,4 +55,13 @@ public interface TemporalOptionsConfiguration {
    */
   WorkerFactoryOptions.Builder modifyDefaultWorkerFactoryOptions(
       WorkerFactoryOptions.Builder newBuilder);
+
+  /**
+   * Modify options or just pass them through
+   *
+   * @param builder
+   * @return
+   */
+  WorkflowServiceStubsOptions.Builder modifyWorkflowServiceStubsOptions(
+      WorkflowServiceStubsOptions.Builder builder);
 }

@@ -80,7 +80,7 @@ public class TemporalBootstrapConfiguration {
       }
       WorkflowServiceStubsOptions options =
           mapWorkflowServiceStubsOptions(channel, temporalProperties);
-      service = WorkflowServiceStubs.newInstance(options);
+      service = WorkflowServiceStubs.newServiceStubs(options);
     } else {
       // Get the default connection for the local docker
       service =
@@ -122,8 +122,7 @@ public class TemporalBootstrapConfiguration {
     WorkflowServiceStubOptions options = temporalProperties.getWorkflowServiceStubOptions();
     if (options != null) {
       ofNullable(options.getDisableHealthCheck()).ifPresent(builder::setDisableHealthCheck);
-      ofNullable(options.getHealthCheckAttemptTimeout())
-          .ifPresent(builder::setHealthCheckAttemptTimeout);
+      ofNullable(options.getHealthCheckAttemptTimeout()).ifPresent(builder::setRpcTimeout);
       ofNullable(options.getHealthCheckTimeout()).ifPresent(builder::setHealthCheckTimeout);
       ofNullable(options.getEnableKeepAlive()).ifPresent(builder::setEnableKeepAlive);
       ofNullable(options.getKeepAliveTime()).ifPresent(builder::setKeepAliveTime);
@@ -137,6 +136,7 @@ public class TemporalBootstrapConfiguration {
           .ifPresent(builder::setConnectionBackoffResetFrequency);
       ofNullable(options.getGrpcReconnectFrequency()).ifPresent(builder::setGrpcReconnectFrequency);
     }
+    temporalOptionsConfiguration.modifyWorkflowServiceStubsOptions(builder);
     return builder.build();
   }
 }
