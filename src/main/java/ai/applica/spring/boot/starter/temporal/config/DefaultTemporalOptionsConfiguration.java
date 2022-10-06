@@ -20,6 +20,7 @@ package ai.applica.spring.boot.starter.temporal.config;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions.Builder;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactoryOptions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +48,12 @@ public class DefaultTemporalOptionsConfiguration implements TemporalOptionsConfi
   @Override
   public WorkerFactoryOptions.Builder modifyDefaultWorkerFactoryOptions(
       WorkerFactoryOptions.Builder builder) {
+    return builder;
+  }
+
+  @Override
+  public WorkflowServiceStubsOptions.Builder modifyWorkflowServiceStubsOptions(
+      WorkflowServiceStubsOptions.Builder builder) {
     return builder;
   }
 }

@@ -21,6 +21,7 @@ import ai.applica.spring.boot.starter.temporal.config.TemporalOptionsConfigurati
 import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClientOptions.Builder;
 import io.temporal.common.RetryOptions;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactoryOptions;
 import org.springframework.context.annotation.Configuration;
 
@@ -51,5 +52,11 @@ public class TestTemporalOptionsConfiguration implements TemporalOptionsConfigur
   public WorkerFactoryOptions.Builder modifyDefaultWorkerFactoryOptions(
       WorkerFactoryOptions.Builder newBuilder) {
     return newBuilder;
+  }
+
+  @Override
+  public WorkflowServiceStubsOptions.Builder modifyWorkflowServiceStubsOptions(
+      WorkflowServiceStubsOptions.Builder builder) {
+    return builder;
   }
 }
